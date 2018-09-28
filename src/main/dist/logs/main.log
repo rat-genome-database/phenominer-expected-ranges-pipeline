@@ -1,0 +1,6 @@
+2018-05-30 16:39:47,279 INFO [org.springframework.beans.factory.xml.XmlBeanDefinitionReader] - Loading XML bean definitions from file [C:\svn\rgd\dev\pipelines\PhenominerExpectedRanges\src\main\dist\properties\AppConfiguration.xml]
+2018-05-30 16:39:47,408 INFO [main] - Phenominer Expected Ranges v. 0.1.0 March 1, 2018
+2018-05-30 16:39:47,408 INFO [edu.mcw.rgd.dao.spring.XmlBeanFactoryManager] - SPRING_CONFIG: /Apps/mcgeechan.xml
+2018-05-30 16:39:47,408 INFO [edu.mcw.rgd.dao.spring.XmlBeanFactoryManager] - creating XmlBeanFactory from /Apps/mcgeechan.xml
+2018-05-30 16:39:47,408 INFO [org.springframework.beans.factory.xml.XmlBeanDefinitionReader] - Loading XML bean definitions from file [C:\Apps\mcgeechan.xml]
+2018-05-30 16:39:52,724 INFO [main] - Total Strain Groups inserted: 332
