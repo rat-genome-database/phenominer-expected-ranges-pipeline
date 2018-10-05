@@ -45,20 +45,38 @@ public class ExpectedRangeProcess extends OntologyXDAO {
         }
         return count;
     }
-    public void insertOrUpdateNormalStrainGroup(Map<String, List<String>> strainGroupMap, int id) throws Exception {
+    public int insertOrUpdateNormalStrainGroup(Map<String, List<String>> strainGroupMap) throws Exception {
+        int id=0;
         for(Map.Entry e: strainGroupMap.entrySet()){
             String key= (String) e.getKey();
-            List<String> strains= (List<String>) e.getValue();
+            List strains= (List) e.getValue();
 
-            for(String t:strains){
+//System.out.println("Strain Group Name: "+ key+"\tSTRAIN ONT IDS SIZE: "+ strains.size());
+            for(Object t:strains){
                 PhenominerStrainGroup strainGroup= new PhenominerStrainGroup();
-                strainGroup.setId(id);
+             //   strainGroup.setId(id);
                 strainGroup.setName(key);
-                strainGroup.setStrain_ont_id(t);
-                if(!existsStrainGroup(strainGroup))
+                strainGroup.setStrain_ont_id(t.toString());
+                if(!existsStrainGroup(strainGroup)) { // if rs_id of strain group exists
+                    id= newStrainGroup(strainGroup); // getting id of strain group if exists
+                    if(id==0){
+                        id=getNextKey("PHENOMINER_STRAIN_GROUP_SEQ");
+                    }
+                    strainGroup.setId(id);
+               //     System.out.println("Normal Strain GROUP: "+ strainGroup.getName());
                     pdao.insertOrUpdate(strainGroup);
+                }else{
+                   id= newStrainGroup(strainGroup);
             }
         }
+    }
+        System.out.println("STRAIN GROUP ID: "+ id);
+        return id;
+    }
+    public int newStrainGroup(PhenominerStrainGroup strainGroup) throws Exception {
+        String strainGroupNmae= strainGroup.getName();
+        int id= pdao.getStrainGroupId(strainGroupNmae);
+        return id;
     }
     public  boolean existsStrainGroup(PhenominerStrainGroup strainGroup) throws Exception {
         String strainGroupName = strainGroup.getName();
@@ -78,7 +96,7 @@ public class ExpectedRangeProcess extends OntologyXDAO {
     public Map<String, String> getAllPhenotypeTraitMap() throws Exception {
         ExperiementRecordDAO dao=new ExperiementRecordDAO();
         Map<String, String> phenotypeTraitMap = new HashMap<>();
-        List<String> phenotypes=dao.getAllPhenotypesWithExperimentRecords();
+        List<String> phenotypes = dao.getAllPhenotypesWithExperimentRecords(null);
         phenotypes.sort((o1,o2)-> Utils.stringsCompareToIgnoreCase(o1,o2));
 
         int rdoCount=0;
