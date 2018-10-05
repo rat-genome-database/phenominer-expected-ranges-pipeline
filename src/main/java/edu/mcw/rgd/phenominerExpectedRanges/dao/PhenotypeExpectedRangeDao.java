@@ -466,15 +466,15 @@ public class PhenotypeExpectedRangeDao extends OntologyXDAO {
             //    System.out.println("STRAIN GROUPS: "+ phenotype+"\n======================");
             String strainGroupName="NormalStrain_"+phenotype;
             List<String> strainOntIds=new ArrayList<>();
-            System.out.println("PHENOTYPE: " + phenotype + "\tACC_ID: "+ cmoAccId);
+        //    System.out.println("PHENOTYPE: " + phenotype + "\tACC_ID: "+ cmoAccId);
             for(String strainGroup:strainGroups) {
                 int id= strainGroupDao.getStrainGroupId(strainGroup);
                 List<String> ontIds=strainGroupDao.getStrainsOfStrainGroup(id);
                 strainOntIds.addAll(ontIds);
-                System.out.println("STRAIN GROUP: "+ strainGroup);
+        /*        System.out.println("STRAIN GROUP: "+ strainGroup);
                 for(String ontId:ontIds){
                     System.out.println(ontId);
-                }
+                }*/
             }
 
 
