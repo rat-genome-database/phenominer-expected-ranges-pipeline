@@ -57,15 +57,14 @@ public class Manager {
     public void run() throws Exception {
 
         long startTime = System.currentTimeMillis();
+        int insertedNormal=0;
         System.out.println("START TIME: "+ startTime);
        int status= process.insertOrUpdateStrainGroup(); // inserts strain groups
         log.info("Total Strain Groups inserted: "+ status);
 
         List<String> conditions= new ArrayList<>(Arrays.asList("XCO:0000099")); //control condition
         List<String> mmoTerms=dao.getMeasurementMethods();
-
         PhenotypeTrait phenotypeTrait= PhenotypeTrait.getInstance();
-
         for(String condition:conditions){
             List<String> xcoTerms=dao.getConditons(condition);
             List<String> phenotypes= process.getAllPhenotypesWithExpRecordsByConditions(xcoTerms);
@@ -79,6 +78,9 @@ public class Manager {
             executor.shutdown();
             while(!executor.isTerminated()){}
             System.out.println("Finished All Threads"+ new Date());
+            List<PhenominerExpectedRange> normalRanges= new ArrayList<>();
+            normalRanges.addAll(dao.getNormalStrainsRanges1(xcoTerms, mmoTerms, phenotypeTrait));
+            insertedNormal=dao.insert(normalRanges);
            /***************************************************PRINT RESUTLTS MATRIX*****************************************/
         //      this.printResultsMatrix(phenotypes, ranges);
         /*******************************************************************************************************************************/
@@ -88,36 +90,7 @@ public class Manager {
             System.out.println("OVERALL TIME:"+ totalTime);
         }
     }
- /*   public void run() throws Exception {
-        long startTime = System.currentTimeMillis();
-        System.out.println("START TIME: "+ System.currentTimeMillis());
-        List<PhenominerExpectedRange> ranges= new ArrayList<>();
-        PhenominerExpectedRangeDao expectedRangeDao= new PhenominerExpectedRangeDao();
-        int inserted=0;
-        int insertedNormal=0;
 
-        Map<String, List<Term>> strainGroupMap= dao.getInbredStrainGroupMap1("RS:0000765");
-         int status= process.insertOrUpdate(strainGroupMap); // inserts strain groups
-
-           List<String> cmoTerms= this.getClinicalMeaurements();
-           List<String> xcoTerms=dao.getConditons("XCO:0000099"); //control condition
-           List<String> mmoTerms=dao.getMeasurementMethods();
-        List<Integer> strainGroupIds= strainGroupDao.getAllDistinctStrainGroupIds();
-        for(String cmo:cmoTerms) {
-            List<PhenominerExpectedRange> rangeList = dao.getRanges(cmo, strainGroupIds, xcoTerms, mmoTerms);
-            ranges.addAll(rangeList);
-         }
-        if(ranges.size()>0){
-           inserted= dao.insert(ranges);
-        }
-
-        List<PhenominerExpectedRange> normalRanges= new ArrayList<>();
-        normalRanges.addAll(dao.getNormalStrainsRanges1()); // inserts normal strain groups and gets expected ranges for normal strains
-       insertedNormal=dao.insert(normalRanges);
-
-        System.out.println("END TIME: "+ (System.currentTimeMillis() - startTime));
-        System.out.println("DONE");
-     }*/
 
     public void printResultsMatrix(List<String> phenotypes, List<PhenominerExpectedRange> ranges) throws Exception {
         List<String> phenotypeNames=new ArrayList<>();
