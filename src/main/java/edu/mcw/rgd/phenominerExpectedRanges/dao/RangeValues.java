@@ -92,7 +92,7 @@ public class RangeValues extends OntologyXDAO {
         double fixed = wv; double meta = fixed; double random= fixed;
 
         if(i2>0.85){
-            double v = (q - number - 1)/(w-w2/w);  w = 0;  w2 = 0; wt = 0; es = 0;  wes = 0;  wes2 = 0; wv = 0;  wv2 = 0;  wsd = 0;
+            double v = (q - number - 1)/(w-w2/w);
             for(Record r:records) {
                 double pSD=Double.parseDouble(r.getMeasurementSD());
                 double  pw = 1 / (pSD * pSD + v);
@@ -225,7 +225,7 @@ public class RangeValues extends OntologyXDAO {
         double fixed = wv; double meta = fixed; double random= fixed;
 
         if(i2>0.85){
-            double v = (q - number - 1)/(w-w2/w);  w = 0;  w2 = 0; wt = 0; es = 0;  wes = 0;  wes2 = 0; wv = 0;  wv2 = 0;  wsd = 0;
+            double v = (q - number - 1)/(w-w2/w);
             for(Record r:records) {
                 double pSD=Double.parseDouble(r.getMeasurementSD());
                 double  pw = 1 / (pSD * pSD + v);

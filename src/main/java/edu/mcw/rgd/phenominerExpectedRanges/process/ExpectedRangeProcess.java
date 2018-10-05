@@ -51,7 +51,6 @@ public class ExpectedRangeProcess extends OntologyXDAO {
             String key= (String) e.getKey();
             List strains= (List) e.getValue();
 
-//System.out.println("Strain Group Name: "+ key+"\tSTRAIN ONT IDS SIZE: "+ strains.size());
             for(Object t:strains){
                 PhenominerStrainGroup strainGroup= new PhenominerStrainGroup();
              //   strainGroup.setId(id);
