@@ -55,14 +55,16 @@ public class ExpectedRangeProcess extends OntologyXDAO {
                 PhenominerStrainGroup strainGroup= new PhenominerStrainGroup();
              //   strainGroup.setId(id);
                 strainGroup.setName(key);
+
                 strainGroup.setStrain_ont_id(t.toString());
+
                 if(!existsStrainGroup(strainGroup)) { // if rs_id of strain group exists
                     id= newStrainGroup(strainGroup); // getting id of strain group if exists
                     if(id==0){
                         id=getNextKey("PHENOMINER_STRAIN_GROUP_SEQ");
                     }
                     strainGroup.setId(id);
-               //     System.out.println("Normal Strain GROUP: "+ strainGroup.getName());
+
                     pdao.insertOrUpdate(strainGroup);
                 }else{
                    id= newStrainGroup(strainGroup);
