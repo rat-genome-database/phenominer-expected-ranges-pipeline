@@ -49,19 +49,22 @@ public class ExpectedRangeProcess extends OntologyXDAO {
         int id=0;
         for(Map.Entry e: strainGroupMap.entrySet()){
             String key= (String) e.getKey();
-            List<String> strains= (List<String>) e.getValue();
+            List strains= (List) e.getValue();
 
-            for(String t:strains){
+            for(Object t:strains){
                 PhenominerStrainGroup strainGroup= new PhenominerStrainGroup();
-                strainGroup.setId(id);
+             //   strainGroup.setId(id);
                 strainGroup.setName(key);
-                strainGroup.setStrain_ont_id(t);
+
+                strainGroup.setStrain_ont_id(t.toString());
+
                 if(!existsStrainGroup(strainGroup)) { // if rs_id of strain group exists
                     id= newStrainGroup(strainGroup); // getting id of strain group if exists
                     if(id==0){
                         id=getNextKey("PHENOMINER_STRAIN_GROUP_SEQ");
                     }
                     strainGroup.setId(id);
+
                     pdao.insertOrUpdate(strainGroup);
                 }else{
                    id= newStrainGroup(strainGroup);
