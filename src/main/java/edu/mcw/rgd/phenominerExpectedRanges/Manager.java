@@ -1,31 +1,23 @@
 package edu.mcw.rgd.phenominerExpectedRanges;
 
 
-import edu.mcw.rgd.dao.impl.PhenominerDAO;
+
 import edu.mcw.rgd.dao.impl.PhenominerStrainGroupDao;
-import edu.mcw.rgd.datamodel.ontologyx.Term;
-import edu.mcw.rgd.datamodel.pheno.Condition;
-import edu.mcw.rgd.datamodel.pheno.Record;
-
 import edu.mcw.rgd.datamodel.phenominerExpectedRange.PhenominerExpectedRange;
-import edu.mcw.rgd.phenominerExpectedRanges.dao.PhenotypeExpectedRangeDao;
 
+import edu.mcw.rgd.phenominerExpectedRanges.dao.PhenotypeExpectedRangeDao;
 import edu.mcw.rgd.phenominerExpectedRanges.model.PhenotypeTrait;
 import edu.mcw.rgd.phenominerExpectedRanges.process.ExpectedRangeProcess;
-import edu.mcw.rgd.process.Utils;
+
 import org.apache.log4j.Logger;
-import org.apache.poi.hssf.usermodel.HSSFSheet;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
+
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.springframework.core.io.FileSystemResource;
 
-import java.io.FileOutputStream;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.io.PrintWriter;
+
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -57,41 +49,56 @@ public class Manager {
     public void run() throws Exception {
 
         long startTime = System.currentTimeMillis();
-        int insertedNormal=0;
+
         System.out.println("START TIME: "+ startTime);
-       int status= process.insertOrUpdateStrainGroup(); // inserts strain groups
+      //  Map<String, List<Term>> strainGroupMap= dao.getInbredStrainGroupMap1("RS:0000765");
+        Map<String, List<String>> strainGroupMap= dao.getInbredStrainGroupMap2("RS:0000765");
+        int status= process.insertOrUpdateStrainGroup(strainGroupMap, false); // inserts strain groups
         log.info("Total Strain Groups inserted: "+ status);
 
         List<String> conditions= new ArrayList<>(Arrays.asList("XCO:0000099")); //control condition
         List<String> mmoTerms=dao.getMeasurementMethods();
         PhenotypeTrait phenotypeTrait= PhenotypeTrait.getInstance();
-        for(String condition:conditions){
-            List<String> xcoTerms=dao.getConditons(condition);
-            List<String> phenotypes= process.getAllPhenotypesWithExpRecordsByConditions(xcoTerms);
-        //   List<String> phenotypes=new ArrayList<>(Arrays.asList("CMO:0000581"));
-            System.out.println("Phenotypes Size:" + phenotypes.size());
-            ExecutorService executor = Executors.newFixedThreadPool(10);
-        for(String cmo:phenotypes){
-             Runnable workerThread=new Range(cmo, xcoTerms, mmoTerms,phenotypeTrait.getPhenotypeTraitMap() );
-             executor.execute(workerThread);
-         }
-            executor.shutdown();
-            while(!executor.isTerminated()){}
-            System.out.println("Finished All Threads"+ new Date());
-            List<PhenominerExpectedRange> normalRanges= new ArrayList<>();
-            normalRanges.addAll(dao.getNormalStrainsRanges1(xcoTerms, mmoTerms, phenotypeTrait));
-            insertedNormal=dao.insert(normalRanges);
-           /***************************************************PRINT RESUTLTS MATRIX*****************************************/
-        //      this.printResultsMatrix(phenotypes, ranges);
+        insertRanges(conditions, mmoTerms, phenotypeTrait);
+        /***************************************************PRINT RESUTLTS MATRIX*****************************************
+            this.printResultsMatrix(phenotypes, ranges);
         /*******************************************************************************************************************************/
             long endTime=System.currentTimeMillis();
             System.out.println("END Time: " + endTime);
             long totalTime=(endTime-startTime)/1000;
             System.out.println("OVERALL TIME:"+ totalTime);
+
+    }
+    public void insertRanges(List<String> conditions, List<String> mmoTerms, PhenotypeTrait phenotypeTrait) throws Exception {
+
+        for (String condition : conditions) {
+            List<String> xcoTerms = dao.getConditons(condition);
+            List<String> phenotypes= process.getAllPhenotypesWithExpRecordsByConditions(xcoTerms);
+          //  List<String> phenotypes = new ArrayList<>(Arrays.asList("CMO:0000057"));
+            System.out.println("Phenotypes Size:" + phenotypes.size());
+            ExecutorService executor = Executors.newFixedThreadPool(10);
+            for (String cmo : phenotypes) {
+                Runnable workerThread = new Range(cmo, xcoTerms, mmoTerms, phenotypeTrait.getPhenotypeTraitMap());
+                executor.execute(workerThread);
+            }
+            executor.shutdown();
+            while (!executor.isTerminated()) {}
+            System.out.println("Finished All Threads" + new Date());
+            System.out.println("Initiated normal strain insertion....");
+            insertNormalRanges(xcoTerms, mmoTerms, phenotypeTrait);
+            System.out.println("Completed inserting normal strains....");
         }
     }
+    public int insertNormalRanges(List<String> xcoTerms, List<String> mmoTerms, PhenotypeTrait phenotypeTrait) throws Exception {
 
-
+        List<PhenominerExpectedRange> normalRanges = new ArrayList<>();
+        normalRanges.addAll(dao.getNormalStrainsRanges1(xcoTerms, mmoTerms, phenotypeTrait));
+        System.out.println("ClinicalMeasurement" + "\t" + "ClinicalMeasurementOntId" + "\t" + "RangeValue" + "\t" + "RangeSD" + "\t" + "RangeLow" + "\t" + "RangeHigh" + "\t" + "Sex");
+        for (PhenominerExpectedRange r : normalRanges) {
+            System.out.println(r.getClinicalMeasurement() + "\t" + r.getClinicalMeasurementOntId() + "\t" + r.getRangeValue() + "\t" + r.getRangeSD() + "\t" + r.getRangeLow() + "\t" + r.getRangeHigh() + "\t" + r.getSex());
+        }
+        return dao.insert(normalRanges);
+    }
     public void printResultsMatrix(List<String> phenotypes, List<PhenominerExpectedRange> ranges) throws Exception {
         List<String> phenotypeNames=new ArrayList<>();
         //  List<String> phenotypes1= new ArrayList<>(Arrays.asList("CMO:0000004"));

@@ -22,7 +22,7 @@ public  class NormalStrainGroup {
         Map<String, List<String>> normalStrainsMap= new HashMap<>();
 
 
-     normalStrainsMap.put("CMO:0000005", new ArrayList<>(Arrays.asList("BN", "HTG", "LEW", "MHS", "WKY")));
+  normalStrainsMap.put("CMO:0000005", new ArrayList<>(Arrays.asList("BN", "HTG", "LEW", "MHS", "WKY")));
      normalStrainsMap.put("CMO:0000004", new ArrayList<>(Arrays.asList("ACI","BN", "BUF", "DA", "F344","GK","LE (inbred)", "LEW", "LN",
                "M520", "MNS", "MR", "MWF", "WKY")));
         normalStrainsMap.put("CMO:0000002", new ArrayList<>(Arrays.asList("BN", "BUF", "F344", "FHH", "GH", "LE (inbred)",
