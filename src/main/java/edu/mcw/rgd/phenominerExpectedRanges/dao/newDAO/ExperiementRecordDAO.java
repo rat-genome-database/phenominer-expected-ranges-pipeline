@@ -57,14 +57,6 @@ public class ExperiementRecordDAO extends OntologyXDAO{
     }
 
     public List<String> getAllPhenotypesWithExperimentRecords(List<String> conditions) throws Exception{
-      /*  String sql=
-                " SELECT DISTINCT(CM.CLINICAL_MEASUREMENT_ONT_ID) FROM EXPERIMENT_RECORD ER, CLINICAL_MEASUREMENT CM, \n" +
-                        " CONDITION_GROUP CG, COND_GROUP_EXPERIMENT_COND CGEC,\n" +
-                        " EXPERIMENT_CONDITION EC \n" +
-                        " WHERE ER.CLINICAL_MEASUREMENT_ID=CM.CLINICAL_MEASUREMENT_ID\n" +
-                        " AND ER.CONDITION_GROUP_ID= CG.CONDITION_GROUP_ID\n" +
-                        " AND CG.CONDITION_GROUP_ID=CGEC.CONDITION_GROUP_ID\n" +
-                        " AND ER.CURATION_STATUS=40\n" ;*/
 
         String sql=
                 " SELECT DISTINCT(CM.CLINICAL_MEASUREMENT_ONT_ID) FROM EXPERIMENT_RECORD ER, CLINICAL_MEASUREMENT CM, \n" +
