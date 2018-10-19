@@ -1,7 +1,5 @@
 .idea/
 src/main/main.iml
-  .gradle/
-        build/
-        gradle/
-        gradlew
-        gradlew.bat
+gradle
+gradlew
+gradlew.bat
