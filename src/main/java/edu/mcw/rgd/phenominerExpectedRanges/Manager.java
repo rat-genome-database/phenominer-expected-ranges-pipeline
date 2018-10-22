@@ -51,7 +51,7 @@ public class Manager {
         long startTime = System.currentTimeMillis();
 
         System.out.println("START TIME: "+ startTime);
-      //  Map<String, List<Term>> strainGroupMap= dao.getInbredStrainGroupMap1("RS:0000765");
+
         Map<String, List<String>> strainGroupMap= dao.getInbredStrainGroupMap2("RS:0000765");
         int status= process.insertOrUpdateStrainGroup(strainGroupMap, false); // inserts strain groups
         log.info("Total Strain Groups inserted: "+ status);

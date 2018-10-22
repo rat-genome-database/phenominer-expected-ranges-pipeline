@@ -107,26 +107,21 @@ public class TraitOntology {
     }
     public int updateExperimentTraitOntIds(Map<String, String> cmoVtMap) throws Exception {
         PhenominerDAO pdao=new PhenominerDAO();
-        OntologyXDAO xdao=new OntologyXDAO();
         int updatedRecCount=0;
         List<String> sampleIds= new ArrayList<>();
         List<String> methodIds=new ArrayList<>();
         List<String> experimentalCond=new ArrayList<>();
         for(Map.Entry e: cmoVtMap.entrySet()) {
             try {
-                  // if(e.getValue().toString().equals("VT:0010011")) {
-                  //      System.out.println("KEY AND VALUE:"+e.getKey() + "\t" + e.getValue());
+
                         List<Record> records = pdao.getFullRecords(sampleIds, methodIds, Arrays.asList(e.getKey().toString()), experimentalCond, 3);
                         Set<Integer> expIds = new HashSet<>();
                         for (Record r : records) {
                             expIds.add(r.getExperimentId());
-
-
                        //     System.out.println(r.getId() + "\t" + e.getKey() + "\t" + r.getClinicalMeasurement().getAccId() + "\t" + xdao.getTerm(e.getKey().toString()).getTerm() + "\t" + r.getExperimentId() + "\t" + pdao.getExperiment(r.getExperimentId()).getTraitOntId() + "\t" + e.getValue());
                         }
                        // System.out.println(e.getKey().toString() + ":\t" + expIds.size());
                         updatedRecCount=updatedRecCount+ updateExperiments(expIds, e.getValue().toString());
-                  //  }
 
             }catch(Exception e1){
                     System.out.println("CMO ID:" + e.getKey() +"\t TRAIT ID: "+ e.getValue());
