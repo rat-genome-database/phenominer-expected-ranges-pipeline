@@ -357,7 +357,11 @@ public class PhenotypeExpectedRangeDao extends OntologyXDAO {
         }
         }
         }
-
+        if(traitObjects.size()==0 && traitOntId!=null){
+            if(!traitOntId.equals("")){
+                traitObjects.add(getTraitObject(getTerm(traitOntId), getTerm(traitOntId)));
+            }
+        }
 
         return traitObjects;
     }
