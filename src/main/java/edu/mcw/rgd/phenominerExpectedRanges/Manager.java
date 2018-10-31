@@ -40,7 +40,9 @@ public class Manager {
         System.out.println(manager.getVersion());
         log.info(manager.getVersion());
        try{
-           manager.run();
+         /*  double testValue=Math.round(Double.parseDouble("0.038729999")*100.0)/100.0;
+           System.out.println("TEST VALUES:============="+ testValue);*/
+          manager.run();
        }catch (Exception e){
            e.printStackTrace();
            log.info(e.getMessage());
@@ -74,7 +76,7 @@ public class Manager {
         for (String condition : conditions) {
             List<String> xcoTerms = dao.getConditons(condition);
             List<String> phenotypes= process.getAllPhenotypesWithExpRecordsByConditions(xcoTerms);
-          //  List<String> phenotypes = new ArrayList<>(Arrays.asList("CMO:0000057"));
+          // List<String> phenotypes = new ArrayList<>(Arrays.asList("CMO:0000009"));
             System.out.println("Phenotypes Size:" + phenotypes.size());
             ExecutorService executor = Executors.newFixedThreadPool(10);
             for (String cmo : phenotypes) {
@@ -84,8 +86,8 @@ public class Manager {
             executor.shutdown();
             while (!executor.isTerminated()) {}
             System.out.println("Finished All Threads" + new Date());
-            System.out.println("Initiated normal strain insertion....");
-            insertNormalRanges(xcoTerms, mmoTerms, phenotypeTrait);
+           // System.out.println("Initiated normal strain insertion....");
+           //insertNormalRanges(xcoTerms, mmoTerms, phenotypeTrait);
             System.out.println("Completed inserting normal strains....");
         }
     }
@@ -93,10 +95,10 @@ public class Manager {
 
         List<PhenominerExpectedRange> normalRanges = new ArrayList<>();
         normalRanges.addAll(dao.getNormalStrainsRanges1(xcoTerms, mmoTerms, phenotypeTrait));
-        System.out.println("ClinicalMeasurement" + "\t" + "ClinicalMeasurementOntId" + "\t" + "RangeValue" + "\t" + "RangeSD" + "\t" + "RangeLow" + "\t" + "RangeHigh" + "\t" + "Sex");
+       /* System.out.println("ClinicalMeasurement" + "\t" + "ClinicalMeasurementOntId" + "\t" + "RangeValue" + "\t" + "RangeSD" + "\t" + "RangeLow" + "\t" + "RangeHigh" + "\t" + "Sex");
         for (PhenominerExpectedRange r : normalRanges) {
             System.out.println(r.getClinicalMeasurement() + "\t" + r.getClinicalMeasurementOntId() + "\t" + r.getRangeValue() + "\t" + r.getRangeSD() + "\t" + r.getRangeLow() + "\t" + r.getRangeHigh() + "\t" + r.getSex());
-        }
+        }*/
         return dao.insert(normalRanges);
     }
     public void printResultsMatrix(List<String> phenotypes, List<PhenominerExpectedRange> ranges) throws Exception {

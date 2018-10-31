@@ -48,6 +48,7 @@ public class Range extends PhenotypeExpectedRangeDao implements Runnable {
          //   log.info(Thread.currentThread().getName() + ": " + this.phenotypeAccId + " started " + new Date());
             try {
                 records = pdao.getFullRecords(rsIds, methods, cmoIds, conditions, 3);
+                System.out.println();
                 List<String> strainOntIds = new ArrayList<>();
                 for (Record r : records) {
                     String ontId = r.getSample().getStrainAccId();
@@ -75,17 +76,26 @@ public class Range extends PhenotypeExpectedRangeDao implements Runnable {
                         }
 
                         if (strainGroupId != 0 && recordsByStrainGroup.size() >= 4) {
+                          // if(strainName.equalsIgnoreCase("F344")) {
+                                List<PhenominerExpectedRange> expectedRanges = this.getSummaryRanges(recordsByStrainGroup, phenotypeAccId, strainGroupId, phenotypeTraitMap);
 
-                            List<PhenominerExpectedRange> expectedRanges = this.getSummaryRanges(recordsByStrainGroup, phenotypeAccId, strainGroupId, phenotypeTraitMap);
-
-                            ranges.addAll(expectedRanges);
+                                ranges.addAll(expectedRanges);
+                         //  }
                         }
 
                     }
                 }
+              //  System.out.println("RANGES SIZE: " + ranges.size());
 
                 if(ranges.size()>0){
+                 /*  System.out.println("============================================================");
+                    for(PhenominerExpectedRange r:ranges){
+                        System.out.println(r.getClinicalMeasurementOntId()+"\t"+ r.getTraitOntId()+"\t"+r.getStrainGroupName()+"\t"+r.getSex()+"\t"+r.getRangeValue()
+                        +"\t"+r.getRangeSD()+"\t"+r.getRangeLow()+"\t"+ r.getRangeHigh());
+                    }*/
                       insert(ranges);
+                    System.out.println("Initiated normal strain insertion...." + getTerm(phenotypeAccId).getTerm());
+                    insertNormalRanges(conditions, methods, phenotypeTraitMap,phenotypeAccId);
                 }
             } catch (Exception e) {
                 System.err.print(phenotypeAccId);
@@ -102,7 +112,7 @@ public class Range extends PhenotypeExpectedRangeDao implements Runnable {
         for (String condition : conditions) {
             List<String> xcoTerms = dao.getConditons(condition);
             //   List<String> phenotypes= process.getAllPhenotypesWithExpRecordsByConditions(xcoTerms);
-            List<String> phenotypes = new ArrayList<>(Arrays.asList("CMO:0000057"));
+            List<String> phenotypes = new ArrayList<>(Arrays.asList("CMO:0000002"));
             System.out.println("Phenotypes Size:" + phenotypes.size());
          //   ExecutorService executor = Executors.newFixedThreadPool(10);
             for (String cmo : phenotypes) {
