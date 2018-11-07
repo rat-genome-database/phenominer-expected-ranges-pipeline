@@ -156,7 +156,7 @@ public class PhenotypeExpectedRangeDao extends OntologyXDAO {
 
         for(Map.Entry e: categories.entrySet()){
             String cat= (String) e.getKey();
-            if(cat.equalsIgnoreCase("overall")) {
+       //     if(cat.equalsIgnoreCase("overall")) {
                 String sex = "Mixed";
                 String method = null;
                 int ageLow = 0;
@@ -189,7 +189,7 @@ public class PhenotypeExpectedRangeDao extends OntologyXDAO {
 
                     ranges.add(this.getRange(recs, phenotypeAccId, strainGroupId, sex, method, ageLow, ageHigh, traitOntId, rangeUnits, traitAncestors));
                 }
-            }
+         //   }
        }
 
         return ranges;

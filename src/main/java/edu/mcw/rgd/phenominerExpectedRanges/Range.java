@@ -78,8 +78,11 @@ public class Range extends PhenotypeExpectedRangeDao implements Runnable {
                         if (strainGroupId != 0 && recordsByStrainGroup.size() >= 4) {
                           // if(strainName.equalsIgnoreCase("F344")) {
                                 List<PhenominerExpectedRange> expectedRanges = this.getSummaryRanges(recordsByStrainGroup, phenotypeAccId, strainGroupId, phenotypeTraitMap);
+                                for(PhenominerExpectedRange r:expectedRanges){
+                                    if(r.getRangeValue()>0 && r.getRangeHigh()>0 && r.getRangeLow()>0)
+                                        ranges.addAll(expectedRanges);
+                                }
 
-                                ranges.addAll(expectedRanges);
                          //  }
                         }
 
@@ -112,7 +115,7 @@ public class Range extends PhenotypeExpectedRangeDao implements Runnable {
         for (String condition : conditions) {
             List<String> xcoTerms = dao.getConditons(condition);
             //   List<String> phenotypes= process.getAllPhenotypesWithExpRecordsByConditions(xcoTerms);
-            List<String> phenotypes = new ArrayList<>(Arrays.asList("CMO:0000002"));
+            List<String> phenotypes = new ArrayList<>(Arrays.asList("CMO:0001556"));
             System.out.println("Phenotypes Size:" + phenotypes.size());
          //   ExecutorService executor = Executors.newFixedThreadPool(10);
             for (String cmo : phenotypes) {
