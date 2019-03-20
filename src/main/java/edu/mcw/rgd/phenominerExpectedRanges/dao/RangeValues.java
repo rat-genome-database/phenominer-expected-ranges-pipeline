@@ -3,6 +3,7 @@ package edu.mcw.rgd.phenominerExpectedRanges.dao;
 import edu.mcw.rgd.dao.impl.OntologyXDAO;
 import edu.mcw.rgd.datamodel.pheno.Record;
 import edu.mcw.rgd.datamodel.phenominerExpectedRange.PhenominerExpectedRange;
+import edu.mcw.rgd.phenominerExpectedRanges.model.RecordExt;
 import edu.mcw.rgd.process.Utils;
 
 
@@ -50,26 +51,21 @@ public class RangeValues extends OntologyXDAO {
         });
      //     System.out.println("Strain_acc_id\tStrain\tCMO_id\tClinicalMeasurement\tcondition_description\tmeasurement_method_id\tmesaurement_method\tSex\tno_of_animals\tage_low_bound\t age_high_bound\tSD\tValue\tci_start\tci_end\tw\tw2");
         for(Record r:records) {
-
+            RecordExt rec= new RecordExt();
+            rec.setRecord(r);
             double value=Double.parseDouble(r.getMeasurementValue());
-
             int noOfAnimals=r.getSample().getNumberOfAnimals();
-
-         //   System.out.println("RAW VALUE:"+ r.getMeasurementValue()+"\tVALUE: "+ value+ "\tRounded Value: " + Math.round(value*100.0)/100.0);
             double pSD = Double.parseDouble(r.getMeasurementSD());
-            double se = (float) (pSD / Math.sqrt(noOfAnimals));
+            double se = (value) / Math.sqrt(r.getSample().getNumberOfAnimals());
             double ci = 1.960 * se;
-            double ci_start = Math.round((value - ci) * 100.0) / 100.0;
-            double ci_end = Math.round((value + ci) * 100.0) / 100.0;
-
+            double ci_start =value - ci;
+            double ci_end = value + ci;
+            rec.setCiStart(ci_start);
+            rec.setCiEnd(ci_end);
             values.add(value);
-
             ciStart.add(ci_start);
             ciEnd.add(ci_end);
-
-
-            /***************************************************************************************/
-
+           /****************************************************************/
             double pw = 1 / (pSD * pSD);
             double pw2 = pw * pw;
             w += pw;
@@ -111,7 +107,7 @@ public class RangeValues extends OntologyXDAO {
         if(i2>0.85){
 
            double v = (q - number - 1)/(w-w2/w);
-
+            w = 0;  wt = 0;  wes = 0;  wes2 = 0;  wv = 0;  wsd = 0;
             for(Record r:records) {
                 double pSD=Math.round(Double.parseDouble(r.getMeasurementSD())*100.0)/100.0;
                  double pw = 1 / (pSD * pSD + v);
@@ -164,7 +160,7 @@ public class RangeValues extends OntologyXDAO {
             phenominerExpectedRange.setRangeHigh(Double.parseDouble(f.format(meta_up)));
             phenominerExpectedRange.setMin(Double.parseDouble(f.format(min)));
             phenominerExpectedRange.setMax(Double.parseDouble(f.format(max)));
-            phenominerExpectedRange.setRangeSD(Double.parseDouble(f.format(newSD)));
+            phenominerExpectedRange.setRangeSD(Double.parseDouble(f.format(asd)));
             phenominerExpectedRange.setRange(Double.parseDouble(f.format(range)));
             return phenominerExpectedRange;
         }else return null;
