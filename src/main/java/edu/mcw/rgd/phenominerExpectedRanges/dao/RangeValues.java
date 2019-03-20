@@ -3,7 +3,7 @@ package edu.mcw.rgd.phenominerExpectedRanges.dao;
 import edu.mcw.rgd.dao.impl.OntologyXDAO;
 import edu.mcw.rgd.datamodel.pheno.Record;
 import edu.mcw.rgd.datamodel.phenominerExpectedRange.PhenominerExpectedRange;
-import edu.mcw.rgd.phenominerExpectedRanges.model.RecordExt;
+
 import edu.mcw.rgd.process.Utils;
 
 
