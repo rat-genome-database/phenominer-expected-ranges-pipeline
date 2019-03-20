@@ -51,8 +51,7 @@ public class RangeValues extends OntologyXDAO {
         });
      //     System.out.println("Strain_acc_id\tStrain\tCMO_id\tClinicalMeasurement\tcondition_description\tmeasurement_method_id\tmesaurement_method\tSex\tno_of_animals\tage_low_bound\t age_high_bound\tSD\tValue\tci_start\tci_end\tw\tw2");
         for(Record r:records) {
-            RecordExt rec= new RecordExt();
-            rec.setRecord(r);
+
             double value=Double.parseDouble(r.getMeasurementValue());
             int noOfAnimals=r.getSample().getNumberOfAnimals();
             double pSD = Double.parseDouble(r.getMeasurementSD());
@@ -60,8 +59,7 @@ public class RangeValues extends OntologyXDAO {
             double ci = 1.960 * se;
             double ci_start =value - ci;
             double ci_end = value + ci;
-            rec.setCiStart(ci_start);
-            rec.setCiEnd(ci_end);
+
             values.add(value);
             ciStart.add(ci_start);
             ciEnd.add(ci_end);
