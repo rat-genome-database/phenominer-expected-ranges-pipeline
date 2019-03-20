@@ -139,10 +139,10 @@ public class PhenotypeExpectedRangeDao extends OntologyXDAO {
 
         List<PhenominerExpectedRange> normalRanges = new ArrayList<>();
         normalRanges.addAll(getNormalStrainsRanges1(xcoTerms, mmoTerms, phenotypeTraitMap, phenotypeAccId));
-        System.out.println("ClinicalMeasurement" + "\t" + "ClinicalMeasurementOntId" + "\t" + "RangeValue" + "\t" + "RangeSD" + "\t" + "RangeLow" + "\t" + "RangeHigh" + "\t" + "Sex");
+      /*  System.out.println("ClinicalMeasurement" + "\t" + "ClinicalMeasurementOntId" + "\t" + "RangeValue" + "\t" + "RangeSD" + "\t" + "RangeLow" + "\t" + "RangeHigh" + "\t" + "Sex");
         for (PhenominerExpectedRange r : normalRanges) {
             System.out.println(r.getClinicalMeasurement() + "\t" + r.getClinicalMeasurementOntId() + "\t" + r.getRangeValue() + "\t" + r.getRangeSD() + "\t" + r.getRangeLow() + "\t" + r.getRangeHigh() + "\t" + r.getSex());
-        }
+        }*/
         return insert(normalRanges);
     }
    public List<PhenominerExpectedRange> getSummaryRanges(List<Record> records, String phenotypeAccId, int strainGroupId, Map<String, String> phenotypeTraitMap) throws Exception {
@@ -161,6 +161,7 @@ public class PhenotypeExpectedRangeDao extends OntologyXDAO {
                 String method = null;
                 int ageLow = 0;
                 int ageHigh = 999;
+            if(cat.equalsIgnoreCase("overall")) {
                 if (cat.equalsIgnoreCase("female")) {
                     sex = "Female";
                 }
@@ -189,7 +190,8 @@ public class PhenotypeExpectedRangeDao extends OntologyXDAO {
 
                     ranges.add(this.getRange(recs, phenotypeAccId, strainGroupId, sex, method, ageLow, ageHigh, traitOntId, rangeUnits, traitAncestors));
                 }
-         //   }
+           }
+
        }
 
         return ranges;
@@ -228,7 +230,7 @@ public class PhenotypeExpectedRangeDao extends OntologyXDAO {
      return traitOntId;
     }
 
-    public Map<String,List<Record>> categorizeRecords(List<Record> records){
+    public Map<String,List<Record>> categorizeRecords(List<Record> records) throws Exception {
         Map<String, List<Record>> sortedRecords= new HashMap<>();
     Set<String> rangeUnits= new HashSet<>();
 
@@ -243,6 +245,14 @@ public class PhenotypeExpectedRangeDao extends OntologyXDAO {
     List<Record> tailRecords= new ArrayList<>();
 
     for(Record r:records){
+        if(r.getMeasurementSD()==null || r.getMeasurementValue()==null){
+            if(r.getMeasurementSD()==null || r.getMeasurementSD()==""){
+                System.out.println("SD"+"\t"+r.getId()+"\t"+ r.getStudyId() +"\t"+getTerm(r.getClinicalMeasurement().getAccId()).getTerm()+"\t"+getTerm(r.getSample().getStrainAccId()).getTerm()+"\t"+r.getSample().getNumberOfAnimals()+"\t"+r.getSample().getSex()+"\t"+r.getMeasurementSD()+"\t"+r.getMeasurementValue()+"\t"+ r.getCurationStatus());
+            }
+            if(r.getMeasurementValue()==null || r.getMeasurementValue()==""){
+                System.out.println("VALUE"+"\t"+getTerm(r.getClinicalMeasurement().getAccId()).getTerm()+"\t"+getTerm(r.getSample().getStrainAccId()).getTerm());
+            }
+        }
           rangeUnits.add(r.getMeasurementUnits());
         if(vascularTermIds.contains(r.getMeasurementMethod().getAccId())){
             if(r.getMeasurementSD()!=null && r.getMeasurementValue()!=null) {
@@ -542,14 +552,14 @@ public class PhenotypeExpectedRangeDao extends OntologyXDAO {
             String sex = "Mixed";
             int ageLow = 0;
             int ageHigh = 999;
-            //    if (cat.equals("overall")){
-            if (cat.equalsIgnoreCase("male") || cat.equalsIgnoreCase("female") || cat.equals("overall")){
-                if (cat.equalsIgnoreCase("female")) {
-                    sex = "Female";
-                }
-                if (cat.equalsIgnoreCase("male")) {
-                    sex = "Male";
-                }
+        //      if (cat.equalsIgnoreCase("overall")) {
+                  if (cat.equalsIgnoreCase("male") || cat.equalsIgnoreCase("female") || cat.equals("overall")) {
+                      if (cat.equalsIgnoreCase("female")) {
+                          sex = "Female";
+                      }
+                      if (cat.equalsIgnoreCase("male")) {
+                          sex = "Male";
+                      }
            /*     if (cat.equals("vascular")) {
                     method = "vascular";
                 }
@@ -568,11 +578,14 @@ public class PhenotypeExpectedRangeDao extends OntologyXDAO {
                     ageHigh = 999;
                 }*/
 
-                List<Record> recs = (List<Record>) entry.getValue();
-                if(recs.size()>0)
-                    ranges.add(this.getRange(recs, cmoAccId, strainGroupId, sex, null, ageLow, ageHigh, traitOntId, rangeUnits, traitAncestors));
-            }
-        }
+                      List<Record> recs = (List<Record>) entry.getValue();
+
+                      if (recs.size() > 0)
+                      //    System.out.print("Normal Range: \t"+recs.size()+"\t");
+                          ranges.add(this.getRange(recs, cmoAccId, strainGroupId, sex, null, ageLow, ageHigh, traitOntId, rangeUnits, traitAncestors));
+                  }
+              }
+      //  }
         //   normalRanges.addAll(ranges);
         return ranges;
     }

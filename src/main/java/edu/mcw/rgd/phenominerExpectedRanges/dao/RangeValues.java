@@ -25,14 +25,7 @@ public class RangeValues extends OntologyXDAO {
         List<Double> values= new ArrayList<>();
         double w = 0;
         double w2 = 0;
-        double wt = 0;
-        double es = 0;
-        double wes = 0;
-        double wes2 = 0;
         double wv = 0;
-        double wv2 = 0;
-        double sd = 0;
-        double wsd = 0;
         double n = 0;
         double number = 0;
         DecimalFormat f = new DecimalFormat(".##");
@@ -48,7 +41,7 @@ public class RangeValues extends OntologyXDAO {
                 return 0;
             }
         });
-     //     System.out.println("Strain_acc_id\tStrain\tCMO_id\tClinicalMeasurement\tcondition_description\tmeasurement_method_id\tmesaurement_method\tSex\tno_of_animals\tage_low_bound\t age_high_bound\tSD\tValue\tci_start\tci_end\tw\tw2");
+    //    System.out.println("Study_ID\tstrain\tSex\tno_of_animals\tage_low_bound\t age_high_bound\tSD\tValue\tci_start\tci_end");
         for(Record r:records) {
 
             double value=Double.parseDouble(r.getMeasurementValue());
@@ -66,105 +59,83 @@ public class RangeValues extends OntologyXDAO {
 
             ciStart.add(ci_start);
             ciEnd.add(ci_end);
-
-
-            /***************************************************************************************/
-
             double pw = 1 / (pSD * pSD);
             double pw2 = pw * pw;
+            double pwv = value * pw;
+            wv+=pwv;
             w += pw;
             w2 += pw2;
             n++;
             number += noOfAnimals;
 
-        /*  System.out.println(r.getSample().getStrainAccId()+ "\t"+getTerm(r.getSample().getStrainAccId()).getTerm() + "\t"+
-                    r.getClinicalMeasurement().getAccId() + "\t"+getTerm(r.getClinicalMeasurement().getAccId()).getTerm()  + "\t"+ r.getConditionDescription() + "\t"+r.getMeasurementMethodId() + "\t"+ getTerm(r.getMeasurementMethod().getAccId()).getTerm() + "\t"+ r.getSample().getSex()+ "\t"+r.getSample().getNumberOfAnimals()+
+        /*    System.out.println(r.getStudyId()+"\t"+ getTerm(r.getSample().getStrainAccId()).getTerm()+
+                    "\t"+ r.getSample().getSex()+ "\t"+r.getSample().getNumberOfAnimals()+
                     "\t"+ r.getSample().getAgeDaysFromLowBound() + "\t"+ r.getSample().getAgeDaysFromHighBound()
                     +"\t"+ r.getMeasurementSD() +"\t"+ r.getMeasurementValue()
                     +"\t" + f.format(ci_start)+ "\t" + f.format(ci_end)
-                    +"\t"+w+"\t"+ w2) ;*/
+                   ) ;*/
         }
-  //  System.err.println("before w: "+ w);
+        double xbar= wv/w;
+        double varXbar=1/w;
+        double newSD=1.96*Math.sqrt(varXbar);
+        double meta_low=xbar-1.96*Math.sqrt(varXbar);
+        double meta_high=xbar+1.96*Math.sqrt(varXbar);
+
+        double Q=0;
         for(Record r:records) {
             double pvalue=Double.parseDouble(r.getMeasurementValue());
             double pSD= Double.parseDouble(r.getMeasurementSD());
             double pw = 1 / (pSD * pSD);
-            double pes = pvalue/ pSD;
-            double pwt = pw / w;
-            double pwv = pvalue * pwt;
-            double pwsd = pSD * pwt;
-            double pwes = pes * pes * pw;
-            double pwes2 = pes * pes * pw * pw;
 
-            wt += pwt;
-            wv += pwv;
-            wes += pwes;
-            wes2 += pwes2;
-            sd += pSD;
-            wsd += pwsd;
-
+            double q=pw * (pvalue-xbar) * (pvalue-xbar);
+            Q+=q;
         }
-        double q = wes-wes2/w;
-        double i2 = (q-n+1)/q;
-        double fixed = wv; double meta = fixed; double random= fixed;
 
-        if(i2>0.85){
+        double q=Q;
 
-           double v = (q - number - 1)/(w-w2/w);
-
-            for(Record r:records) {
-                double pSD=Math.round(Double.parseDouble(r.getMeasurementSD())*100.0)/100.0;
-                 double pw = 1 / (pSD * pSD + v);
-                 w += pw;
-
+        double i2 =Math.max(0, ((q-n+1)/q)) ;
+     /*   System.out.println("xbar="+xbar);
+        System.out.println("q="+q);
+        System.out.println("i2="+ i2);*/
+        if(i2>0.85){ // RANDOM EFFECT
+            double wNew=0;
+            double wvNew=0;
+            double c=w - w2/w;
+            double I2=(q-n+1)/c;
+            for(Record r: records){
+                double value=Double.parseDouble(r.getMeasurementValue());
+                double pSD= Double.parseDouble(r.getMeasurementSD());
+                double pw=1/((pSD*pSD)+I2);
+                double pwv = value * pw;
+                wvNew+=pwv;
+                wNew+=pw;
             }
-
-            for(Record r:records) {
-                double pSD=Math.round(Double.parseDouble(r.getMeasurementSD())*100.0)/100.0;
-
-                double pvalue=Math.round((Double.parseDouble(r.getMeasurementValue()))*100.0)/100.0;
-                double  pw = 1 / (pSD * pSD + v);
-                double pwt = pw / w;
-                double pwv = pvalue * pwt;
-                double pwsd = pSD * pwt;
-                double pes = pvalue/ pSD;
-                double pwes = pes * pes * pw;
-                double  pwes2 = pes * pes * pw * pw;
-
-                wt += pwt;
-                wv += pwv;
-                wes += pwes;
-                wes2 += pwes2;
-                wsd += pwsd;
-            }
+            wv=wvNew;
+            w=wNew;
+            xbar= wv/w;
+            varXbar=1/w;
+            newSD=1.96*Math.sqrt(varXbar);
+            meta_low=xbar-1.96*Math.sqrt(varXbar);
+            meta_high=xbar+1.96*Math.sqrt(varXbar);
         }
 
-        double asd = sd/n;
-        double newSD = (3 * asd / Math.sqrt(number));
-        double meta_low = meta - 3*asd/Math.sqrt(number);
-        double meta_up = meta + 3*asd/Math.sqrt(number);
-        if(i2>0.85){
-            random = wv;
-            if(random> Collections.min(ciStart))
-            {meta = random;}
-            meta_low = meta - 3*asd/Math.sqrt(number);
-            meta_up = meta + 3*asd/Math.sqrt(number);
-        }
 
-       /* System.out.println("META: " + meta);
-        System.out.println("FIXED: " + fixed);*/
         double min = Collections.min(values);
         double max = Collections.max(values);
         double range = Math.round((max - min) * 100.0) / 100.0;
 
-
+  //      System.out.print(f.format(q)+"\t"+f.format(i2)+"\t"+f.format(xbar)+"\t"+f.format(meta_low)+"\t"+f.format(meta_high)+"\n");
+       /* System.out.println("meta="+xbar);
+        System.out.println("Meta Low="+ meta_low);
+        System.out.println("Meta up="+ meta_high+"\n===========================================");*/
         if(number>0) { // if total number of animals of all the records is greater than 0 then return phenominerExpectedRange
-            phenominerExpectedRange.setRangeValue(Double.parseDouble(f.format(meta)));
+            phenominerExpectedRange.setRangeValue(Double.parseDouble(f.format(xbar)));
             phenominerExpectedRange.setRangeLow(Double.parseDouble(f.format(meta_low)));
-            phenominerExpectedRange.setRangeHigh(Double.parseDouble(f.format(meta_up)));
+            phenominerExpectedRange.setRangeHigh(Double.parseDouble(f.format(meta_high)));
             phenominerExpectedRange.setMin(Double.parseDouble(f.format(min)));
             phenominerExpectedRange.setMax(Double.parseDouble(f.format(max)));
-            phenominerExpectedRange.setRangeSD(Double.parseDouble(f.format(newSD)));
+          phenominerExpectedRange.setRangeSD(Double.parseDouble(f.format(newSD)));
+     //       phenominerExpectedRange.setRangeSD(newSD);
             phenominerExpectedRange.setRange(Double.parseDouble(f.format(range)));
             return phenominerExpectedRange;
         }else return null;

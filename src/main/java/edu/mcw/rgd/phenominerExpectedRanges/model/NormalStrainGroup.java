@@ -17,7 +17,7 @@ public  class NormalStrainGroup {
                 "CMO:0000074" ,
                 "CMO:0000075" ,
                 "CMO:0000108" ,
-                "CMO:0000530"
+                "CMO:0000530"CMO:0000004
          */
         Map<String, List<String>> normalStrainsMap= new HashMap<>();
 

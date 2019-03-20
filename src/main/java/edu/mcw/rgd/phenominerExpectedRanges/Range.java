@@ -45,10 +45,10 @@ public class Range extends PhenotypeExpectedRangeDao implements Runnable {
             List<String> rsIds = new ArrayList<>();
             List<Record> records = null;
             System.out.println(Thread.currentThread().getName() + ": " + this.phenotypeAccId + " started " + new Date());
-         //   log.info(Thread.currentThread().getName() + ": " + this.phenotypeAccId + " started " + new Date());
+          //  log.info(Thread.currentThread().getName() + ": " + this.phenotypeAccId + " started " + new Date());
             try {
                 records = pdao.getFullRecords(rsIds, methods, cmoIds, conditions, 3);
-                System.out.println();
+
                 List<String> strainOntIds = new ArrayList<>();
                 for (Record r : records) {
                     String ontId = r.getSample().getStrainAccId();
@@ -57,6 +57,8 @@ public class Range extends PhenotypeExpectedRangeDao implements Runnable {
                 }
 
                 List<String> strainGroupNames = new ArrayList<>();
+         //       System.out.println("Clinical Measurement: "+ getTerm(phenotypeAccId).getTerm()+"\n=============================");
+         //       System.out.println("Strain Group\tNo.of experiments\tQ\ti2\tmeta\tmeta_low\tmeta_high");
                 for (String id : strainOntIds) {
                     int strainGroupId = strainGroupDao.getStrainGroupIdByStrainOntId(id);
 
@@ -77,6 +79,7 @@ public class Range extends PhenotypeExpectedRangeDao implements Runnable {
 
                         if (strainGroupId != 0 && recordsByStrainGroup.size() >= 4) {
                           // if(strainName.equalsIgnoreCase("F344")) {
+         //                   System.out.print(strainName+"\t" +recordsByStrainGroup.size()+"\t");
                                 List<PhenominerExpectedRange> expectedRanges = this.getSummaryRanges(recordsByStrainGroup, phenotypeAccId, strainGroupId, phenotypeTraitMap);
                                 for(PhenominerExpectedRange r:expectedRanges){
                                     if(r.getRangeValue()>0 && r.getRangeHigh()>0 && r.getRangeLow()>0)
@@ -88,17 +91,14 @@ public class Range extends PhenotypeExpectedRangeDao implements Runnable {
 
                     }
                 }
-              //  System.out.println("RANGES SIZE: " + ranges.size());
+
+
 
                 if(ranges.size()>0){
-                 /*  System.out.println("============================================================");
-                    for(PhenominerExpectedRange r:ranges){
-                        System.out.println(r.getClinicalMeasurementOntId()+"\t"+ r.getTraitOntId()+"\t"+r.getStrainGroupName()+"\t"+r.getSex()+"\t"+r.getRangeValue()
-                        +"\t"+r.getRangeSD()+"\t"+r.getRangeLow()+"\t"+ r.getRangeHigh());
-                    }*/
-                      insert(ranges);
-                    System.out.println("Initiated normal strain insertion...." + getTerm(phenotypeAccId).getTerm());
+                       insert(ranges);
+              //      System.out.println("Initiated normal strain insertion...." + getTerm(phenotypeAccId).getTerm());
                     insertNormalRanges(conditions, methods, phenotypeTraitMap,phenotypeAccId);
+               //     System.out.println("===================================");
                 }
             } catch (Exception e) {
                 System.err.print(phenotypeAccId);
@@ -115,7 +115,10 @@ public class Range extends PhenotypeExpectedRangeDao implements Runnable {
         for (String condition : conditions) {
             List<String> xcoTerms = dao.getConditons(condition);
             //   List<String> phenotypes= process.getAllPhenotypesWithExpRecordsByConditions(xcoTerms);
-            List<String> phenotypes = new ArrayList<>(Arrays.asList("CMO:0001556"));
+        //    List<String> phenotypes = new ArrayList<>(Arrays.asList("CMO:0000002","CMO:0000004","CMO:0000005","CMO:0000009",
+        //            "CMO:0000069","CMO:0000071", "CMO:0000072","CMO:0000074" ,"CMO:0000075","CMO:0000108","CMO:0000530"));
+            List<String> phenotypes = new ArrayList<>(Arrays.asList("CMO:0000071"));
+
             System.out.println("Phenotypes Size:" + phenotypes.size());
          //   ExecutorService executor = Executors.newFixedThreadPool(10);
             for (String cmo : phenotypes) {

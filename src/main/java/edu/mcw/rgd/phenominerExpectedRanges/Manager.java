@@ -76,9 +76,11 @@ public class Manager {
         for (String condition : conditions) {
             List<String> xcoTerms = dao.getConditons(condition);
             List<String> phenotypes= process.getAllPhenotypesWithExpRecordsByConditions(xcoTerms);
-          // List<String> phenotypes = new ArrayList<>(Arrays.asList("CMO:0000009"));
+    //  List<String> phenotypes = new ArrayList<>(Arrays.asList("CMO:0000002","CMO:0000004","CMO:0000005","CMO:0000009",
+     //         "CMO:0000069","CMO:0000071", "CMO:0000072","CMO:0000074" ,"CMO:0000075","CMO:0000108","CMO:0000530"));
             System.out.println("Phenotypes Size:" + phenotypes.size());
             ExecutorService executor = Executors.newFixedThreadPool(10);
+      //      System.out.println("Missing\tRecorId\tStudyId\tClinicalMeasurement\tStrain\tNumberOfAnimals\tSex\tSD\tMeasurementValue\tCurationStatus");
             for (String cmo : phenotypes) {
                 Runnable workerThread = new Range(cmo, xcoTerms, mmoTerms, phenotypeTrait.getPhenotypeTraitMap());
                 executor.execute(workerThread);
