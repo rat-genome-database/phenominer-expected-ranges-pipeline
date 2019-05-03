@@ -29,9 +29,7 @@ public class ExpectedRangeProcess extends OntologyXDAO {
         int count=0;
         int id=0;
         String normalStrainGroupName=new String();
-     //   Map<String, List<Term>> strainGroupMap= dao.getInbredStrainGroupMap1("RS:0000765");
-
-        for(Map.Entry e: strainGroupMap.entrySet()){
+            for(Map.Entry e: strainGroupMap.entrySet()){
             String key= (String) e.getKey();
             List<String> strains= (List<String>) e.getValue();
             String strainGroupName=new String();
