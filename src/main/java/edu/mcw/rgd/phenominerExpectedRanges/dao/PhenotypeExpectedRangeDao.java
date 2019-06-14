@@ -151,7 +151,7 @@ public class PhenotypeExpectedRangeDao extends OntologyXDAO {
                 }
                 if (cat.equals("age3")) {
                     ageLow = 100;
-                    ageHigh = 999;
+                    ageHigh = 998;
                 }
                 List<Record> recs = (List<Record>) e.getValue();
                 if (recs.size() >= 4) {
@@ -238,7 +238,7 @@ public class PhenotypeExpectedRangeDao extends OntologyXDAO {
             if (r.getSample().getAgeDaysFromHighBound() != null) ageHigh = r.getSample().getAgeDaysFromHighBound();
             if (ageLow >= 0 && ageHigh <= 79) age1Records.add(r);
             if (ageLow >= 80 && ageHigh <= 99) age2Records.add(r);
-            if (ageLow >= 100 && ageHigh <= 999) age3Records.add(r);
+            if (ageLow >= 100 && ageHigh <= 998) age3Records.add(r);
         }}
 
     }
