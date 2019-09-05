@@ -3,7 +3,7 @@ package edu.mcw.rgd.phenominerExpectedRanges;
 
 
 import edu.mcw.rgd.dao.impl.PhenominerStrainGroupDao;
-import edu.mcw.rgd.datamodel.phenominerExpectedRange.PhenominerExpectedRange;
+
 
 import edu.mcw.rgd.phenominerExpectedRanges.dao.PhenotypeExpectedRangeDao;
 import edu.mcw.rgd.phenominerExpectedRanges.model.PhenotypeTrait;
@@ -15,8 +15,8 @@ import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.springframework.core.io.FileSystemResource;
 
-import java.io.FileWriter;
-import java.io.PrintWriter;
+
+
 
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -73,14 +73,18 @@ public class Manager {
 
         for (String condition : conditions) {
             List<String> xcoTerms = dao.getConditons(condition);
-            List<String> phenotypes= process.getAllPhenotypesWithExpRecordsByConditions(xcoTerms);
-    /*      List<String> phenotypes = new ArrayList<>(Arrays.asList(
-            "CMO:0000002"  ,"CMO:0000004","CMO:0000005","CMO:0000009",
+     List<String> phenotypes= process.getAllPhenotypesWithExpRecordsByConditions(xcoTerms);
+     //      List<String> phenotypes = new ArrayList<>(Arrays.asList("CMO:0000009"));
+  /*   List<String> phenotypes = new ArrayList<>(Arrays.asList(
+         "CMO:0000002"  ,"CMO:0000004","CMO:0000005","CMO:0000009",
             "CMO:0000069","CMO:0000071", "CMO:0000072","CMO:0000074" ,"CMO:0000075","CMO:0000108","CMO:0000530"));*/
             System.out.println("Phenotypes Size:" + phenotypes.size());
             ExecutorService executor = Executors.newFixedThreadPool(10);
+        //   System.out.println("CMO term\tStrain Group\tsigma\tNo.of Experiments\tQ\tI2\tCP\tmeta\tmeta_low\tmeta_high\tEFFECT");
             for (String cmo : phenotypes) {
+
                 Runnable workerThread = new Range(cmo, xcoTerms, mmoTerms, phenotypeTrait.getPhenotypeTraitMap());
+
                 executor.execute(workerThread);
             }
             executor.shutdown();
