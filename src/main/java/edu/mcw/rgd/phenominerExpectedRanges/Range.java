@@ -46,13 +46,14 @@ public class Range extends PhenotypeExpectedRangeDao implements Runnable {
             cmoIds.add(phenotypeAccId);
             List<String> rsIds = new ArrayList<>();
             List<Record> records = null;
+       List<Record> conditionExludedRecs=new ArrayList<>();
           System.out.println(Thread.currentThread().getName() + ": " + this.phenotypeAccId + " started " + new Date());
           //  log.info(Thread.currentThread().getName() + ": " + this.phenotypeAccId + " started " + new Date());
             try {
                 records = pdao.getFullRecords(rsIds, methods, cmoIds, conditions, 3);
-
+                conditionExludedRecs=getConditionExcludedRecs(records);
                 List<String> strainOntIds = new ArrayList<>();
-                for (Record r : records) {
+                for (Record r : conditionExludedRecs) {
                  //   System.out.println(r.getId()+"\t"+getTerm(r.getSample().getStrainAccId()).getTerm()+"\t"+r.getMeasurementValue()+"\t");
                     String ontId = r.getSample().getStrainAccId();
                     if (!strainOntIds.contains(ontId))
@@ -67,7 +68,7 @@ public class Range extends PhenotypeExpectedRangeDao implements Runnable {
                     if (!strainGroupNames.contains(strainName)) {
                         strainGroupNames.add(strainName);
                         List<Record> recordsByStrainGroup = new ArrayList<>();
-                        for (Record r : records) {
+                        for (Record r : conditionExludedRecs) {
                             String ontId = r.getSample().getStrainAccId();
                             int sgId = strainGroupDao.getStrainGroupIdByStrainOntId(ontId);
 
