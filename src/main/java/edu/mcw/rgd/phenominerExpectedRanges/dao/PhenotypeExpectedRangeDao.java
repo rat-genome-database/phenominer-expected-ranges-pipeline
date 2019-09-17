@@ -7,6 +7,7 @@ import edu.mcw.rgd.dao.impl.PhenominerStrainGroupDao;
 
 import edu.mcw.rgd.datamodel.ontologyx.Term;
 import edu.mcw.rgd.datamodel.ontologyx.TermWithStats;
+import edu.mcw.rgd.datamodel.pheno.Condition;
 import edu.mcw.rgd.datamodel.pheno.Experiment;
 import edu.mcw.rgd.datamodel.pheno.Record;
 import edu.mcw.rgd.datamodel.phenominerExpectedRange.PhenominerExpectedRange;
@@ -154,13 +155,14 @@ public class PhenotypeExpectedRangeDao extends OntologyXDAO {
                     ageHigh = 998;
                 }
                 List<Record> recs = (List<Record>) e.getValue();
-                if (recs.size() >= 4) {
 
-                    PhenominerExpectedRange r= this.getRange(recs, phenotypeAccId, strainGroupId, sex, method, ageLow, ageHigh, traitOntId, rangeUnits, traitAncestors, false);
-                    if(r!= null) {
-                        ranges.add(r);
-                    }
+            if (recs.size() >= 4) {
+
+                PhenominerExpectedRange r= this.getRange(recs, phenotypeAccId, strainGroupId, sex, method, ageLow, ageHigh, traitOntId, rangeUnits, traitAncestors, false);
+                if(r!= null) {
+                    ranges.add(r);
                 }
+            }
     //  }
 
     }
@@ -997,6 +999,24 @@ public class PhenotypeExpectedRangeDao extends OntologyXDAO {
 
         }
 
+    }
+    public List<Record> getConditionExcludedRecs(List<Record> records){
+        List<Record> conditionExcludedRecs= new ArrayList<>();
+
+        for(Record r:records){
+            Set<String> conditionSet=new HashSet<>();
+            List<Condition> condition=r.getConditions();
+            //      System.out.print(r.getId());
+            for(Condition c:condition){
+                //         System.out.print(xdao.getTerm(c.getOntologyId()).getTerm() + "\t");
+                conditionSet.add(c.getOntologyId());
+            }
+            //    System.out.print("\n");
+            if(conditionSet.size()<2){
+                conditionExcludedRecs.add(r);
+            }
+        }
+        return conditionExcludedRecs;
     }
 
     public static  void main(String[] args) throws Exception {
