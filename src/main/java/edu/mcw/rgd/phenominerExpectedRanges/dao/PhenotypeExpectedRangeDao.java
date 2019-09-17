@@ -16,6 +16,8 @@ import edu.mcw.rgd.datamodel.phenominerExpectedRange.TraitObject;
 import edu.mcw.rgd.phenominerExpectedRanges.model.*;
 import edu.mcw.rgd.phenominerExpectedRanges.process.ExpectedRangeProcess;
 
+import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.util.*;
 
 import static edu.mcw.rgd.phenominerExpectedRanges.Manager.log;
@@ -28,36 +30,14 @@ public class PhenotypeExpectedRangeDao extends OntologyXDAO {
     PhenominerDAO pdao= new PhenominerDAO();
     PhenominerStrainGroupDao strainGroupDao= new PhenominerStrainGroupDao();
     PhenominerExpectedRangeDao dao= new PhenominerExpectedRangeDao();
+    OntologyXDAO xdao=new OntologyXDAO();
 
     RangeValues rangeValues= new RangeValues();
 
     private static List<String> vascularTermIds;
     private static List<String> tailTermIds;
 
-    public Map<String, List<Term>> getInbredStrainGroupMap1(String termAcc) throws Exception {
-
-        List<TermWithStats> topLevelTerms=getActiveChildTerms(termAcc,3);
-
-        Map<String, List<Term>> strainGroupMap= new HashMap<>();
-        for(TermWithStats p: topLevelTerms){
-                   List<Term> rsTerms=new ArrayList<>();
-      // String term_acc="RS:0000113";
-       List<Term> termAndChildTerms= getAllActiveTermDescendants(p.getAccId());
-      //   List<Term> termAndChildTerms= getAllActiveTermDescendants(term_acc);
-           termAndChildTerms.add(getTerm(p.getAccId()));
-     //termAndChildTerms.add(getTerm(term_acc));
-            for(Term t: termAndChildTerms){
-                rsTerms.add(t);
-          //    System.out.println(t.getAccId() + "||" +t.getTerm());
-            }
-       //   strainGroupMap.put(term_acc, rsTerms);
-
-        strainGroupMap.put(p.getAccId(), rsTerms);
-     }
-        return strainGroupMap;
-
-    }
-    public Map<String, List<String>> getInbredStrainGroupMap2(String termAcc) throws Exception {
+   public Map<String, List<String>> getInbredStrainGroupMap2(String termAcc) throws Exception {
 
         List<TermWithStats> topLevelTerms=getActiveChildTerms(termAcc,3);
         Map<String, List<String>> strainGroupMap= new HashMap<>();
@@ -125,25 +105,13 @@ public class PhenotypeExpectedRangeDao extends OntologyXDAO {
         }
         return conditions;
     }
-    public int insertNormalRanges(List<String> xcoTerms, List<String> mmoTerms, PhenotypeTrait phenotypeTrait) throws Exception {
-
-        List<PhenominerExpectedRange> normalRanges = new ArrayList<>();
-        normalRanges.addAll(getNormalStrainsRanges1(xcoTerms, mmoTerms, phenotypeTrait));
-       /* System.out.println("ClinicalMeasurement" + "\t" + "ClinicalMeasurementOntId" + "\t" + "RangeValue" + "\t" + "RangeSD" + "\t" + "RangeLow" + "\t" + "RangeHigh" + "\t" + "Sex");
-        for (PhenominerExpectedRange r : normalRanges) {
-            System.out.println(r.getClinicalMeasurement() + "\t" + r.getClinicalMeasurementOntId() + "\t" + r.getRangeValue() + "\t" + r.getRangeSD() + "\t" + r.getRangeLow() + "\t" + r.getRangeHigh() + "\t" + r.getSex());
-        }*/
-        return insert(normalRanges);
-    }
     public int insertNormalRanges(List<String> xcoTerms, List<String> mmoTerms, Map phenotypeTraitMap, String phenotypeAccId) throws Exception {
 
         List<PhenominerExpectedRange> normalRanges = new ArrayList<>();
         normalRanges.addAll(getNormalStrainsRanges1(xcoTerms, mmoTerms, phenotypeTraitMap, phenotypeAccId));
-        System.out.println("ClinicalMeasurement" + "\t" + "ClinicalMeasurementOntId" + "\t" + "RangeValue" + "\t" + "RangeSD" + "\t" + "RangeLow" + "\t" + "RangeHigh" + "\t" + "Sex");
-        for (PhenominerExpectedRange r : normalRanges) {
-            System.out.println(r.getClinicalMeasurement() + "\t" + r.getClinicalMeasurementOntId() + "\t" + r.getRangeValue() + "\t" + r.getRangeSD() + "\t" + r.getRangeLow() + "\t" + r.getRangeHigh() + "\t" + r.getSex());
-        }
+        if(normalRanges.size()>0)
         return insert(normalRanges);
+        return 0;
     }
    public List<PhenominerExpectedRange> getSummaryRanges(List<Record> records, String phenotypeAccId, int strainGroupId, Map<String, String> phenotypeTraitMap) throws Exception {
 
@@ -156,11 +124,12 @@ public class PhenotypeExpectedRangeDao extends OntologyXDAO {
 
         for(Map.Entry e: categories.entrySet()){
             String cat= (String) e.getKey();
-       //     if(cat.equalsIgnoreCase("overall")) {
+    //      if(cat.equalsIgnoreCase("overall")) {
                 String sex = "Mixed";
                 String method = null;
                 int ageLow = 0;
                 int ageHigh = 999;
+    //   if(cat.equalsIgnoreCase("overall")) {
                 if (cat.equalsIgnoreCase("female")) {
                     sex = "Female";
                 }
@@ -182,15 +151,19 @@ public class PhenotypeExpectedRangeDao extends OntologyXDAO {
                 }
                 if (cat.equals("age3")) {
                     ageLow = 100;
-                    ageHigh = 999;
+                    ageHigh = 998;
                 }
                 List<Record> recs = (List<Record>) e.getValue();
                 if (recs.size() >= 4) {
 
-                    ranges.add(this.getRange(recs, phenotypeAccId, strainGroupId, sex, method, ageLow, ageHigh, traitOntId, rangeUnits, traitAncestors));
+                    PhenominerExpectedRange r= this.getRange(recs, phenotypeAccId, strainGroupId, sex, method, ageLow, ageHigh, traitOntId, rangeUnits, traitAncestors, false);
+                    if(r!= null) {
+                        ranges.add(r);
+                    }
                 }
-         //   }
-       }
+    //  }
+
+    }
 
         return ranges;
     }
@@ -228,7 +201,7 @@ public class PhenotypeExpectedRangeDao extends OntologyXDAO {
      return traitOntId;
     }
 
-    public Map<String,List<Record>> categorizeRecords(List<Record> records){
+    public Map<String,List<Record>> categorizeRecords(List<Record> records) throws Exception {
         Map<String, List<Record>> sortedRecords= new HashMap<>();
     Set<String> rangeUnits= new HashSet<>();
 
@@ -242,68 +215,31 @@ public class PhenotypeExpectedRangeDao extends OntologyXDAO {
     List<Record> vascularRecords= new ArrayList<>();
     List<Record> tailRecords= new ArrayList<>();
 
-    for(Record r:records){
-          rangeUnits.add(r.getMeasurementUnits());
-        if(vascularTermIds.contains(r.getMeasurementMethod().getAccId())){
-            if(r.getMeasurementSD()!=null && r.getMeasurementValue()!=null) {
-                if(Double.parseDouble(r.getMeasurementSD())>0.0)
-                    vascularRecords.add(r);
-            }
+    for(Record r:records) {
 
-        }
-        if(tailTermIds.contains(r.getMeasurementMethod().getAccId())){
-            if(r.getMeasurementSD()!=null && r.getMeasurementValue()!=null) {
-                if(Double.parseDouble(r.getMeasurementSD())>0.0)
-                tailRecords.add(r);
-            }
-        }
-        if(r.getMeasurementSD()!=null && r.getMeasurementValue()!=null){
-            if(Double.parseDouble(r.getMeasurementSD())>0.0)
-            overAllRecords.add(r);
-
-        }
-        if(r.getSample().getSex().equalsIgnoreCase("male")){
-            if(r.getMeasurementSD()!=null && r.getMeasurementValue()!=null) {
-                if(Double.parseDouble(r.getMeasurementSD())>0.0)
-                maleRecords.add(r);
-            }
-        }else{
-            if(r.getSample().getSex().equalsIgnoreCase("female")){
-                if(r.getMeasurementSD()!=null && r.getMeasurementValue()!=null) {
-                    if(Double.parseDouble(r.getMeasurementSD())>0.0)
-                       femaleRecords.add(r);
+        rangeUnits.add(r.getMeasurementUnits());
+        if (r.getMeasurementSD() != null && r.getMeasurementValue() != null && !Objects.equals(r.getMeasurementValue(), "") && !Objects.equals(r.getMeasurementSD(), "")) {
+            if (Double.parseDouble(r.getMeasurementSD()) > 0.0){
+                overAllRecords.add(r);
+                int ageLow = 0;
+                int ageHigh = 0;
+            if (vascularTermIds.contains(r.getMeasurementMethod().getAccId())) vascularRecords.add(r);
+            if (tailTermIds.contains(r.getMeasurementMethod().getAccId()))   tailRecords.add(r);
+            if (r.getSample().getSex().equalsIgnoreCase("male")) {
+                     maleRecords.add(r);
+               } else {
+                if (r.getSample().getSex().equalsIgnoreCase("female")) {
+                      femaleRecords.add(r);
+                } else {
+                    unspecifiedSexRecords.add(r);
                 }
-            }else{
-                unspecifiedSexRecords.add(r);
             }
-        }
-
-        int ageLow= 0;
-        if(r.getSample().getAgeDaysFromLowBound()!=null){
-            ageLow=r.getSample().getAgeDaysFromLowBound();
-        }
-        int ageHigh= 0;
-        if(r.getSample().getAgeDaysFromHighBound()!=null){
-            ageHigh=r.getSample().getAgeDaysFromHighBound();
-        }
-        if(ageLow>=0 && ageHigh<=79){
-            if(r.getMeasurementSD()!=null && r.getMeasurementValue()!=null) {
-                if(Double.parseDouble(r.getMeasurementSD())>0.0)
-                age1Records.add(r);
-            }
-        }
-        if(ageLow>=80 && ageHigh<=99){
-            if(r.getMeasurementSD()!=null && r.getMeasurementValue()!=null) {
-                if(Double.parseDouble(r.getMeasurementSD())>0.0)
-                age2Records.add(r);
-            }
-        }
-        if(ageLow>=100 && ageHigh<=999){
-            if(r.getMeasurementSD()!=null && r.getMeasurementValue()!=null) {
-                if(Double.parseDouble(r.getMeasurementSD())>0.0)
-                age3Records.add(r);
-            }
-        }
+            if (r.getSample().getAgeDaysFromLowBound() != null) ageLow = r.getSample().getAgeDaysFromLowBound();
+            if (r.getSample().getAgeDaysFromHighBound() != null) ageHigh = r.getSample().getAgeDaysFromHighBound();
+            if (ageLow >= 0 && ageHigh <= 79) age1Records.add(r);
+            if (ageLow >= 80 && ageHigh <= 99) age2Records.add(r);
+            if (ageLow >= 100 && ageHigh <= 998) age3Records.add(r);
+        }}
 
     }
         sortedRecords.put("overall", overAllRecords);
@@ -317,8 +253,10 @@ public class PhenotypeExpectedRangeDao extends OntologyXDAO {
         sortedRecords.put("unspecifiedSex", unspecifiedSexRecords);
         return sortedRecords;
             }
-    public PhenominerExpectedRange getRange(List<Record> records, String phenotypeAccId,int strainGroupId, String sex,String method, int ageLow, int ageHigh, String traitOntId, Set<String> rangeUnits, List<TraitObject> traitAncestors) throws Exception {
-      PhenominerExpectedRange  range= rangeValues.getRangeValues(records);
+    public PhenominerExpectedRange getRange(List<Record> records, String phenotypeAccId,int strainGroupId, String sex,String method, int ageLow, int ageHigh, String traitOntId, Set<String> rangeUnits, List<TraitObject> traitAncestors, boolean isNormal) throws Exception {
+  //    System.out.print(xdao.getTerm(phenotypeAccId).getTerm()+"\t"+strainGroupDao.getStrainGroupName(strainGroupId)+"\t");
+      PhenominerExpectedRange  range= rangeValues.getRangeValues(records, isNormal);
+    //   System.out.print("\n");
         String phenotype=getTerm(phenotypeAccId).getTerm();
         String parentStrainName= strainGroupDao.getStrainGroupName(strainGroupId);
         if(range!=null) {
@@ -343,6 +281,70 @@ public class PhenotypeExpectedRangeDao extends OntologyXDAO {
             range.setTraitOntId(traitOntId);
             range.setUnits(rangeUnits.toString());
             range.setTraitAncestors(traitAncestors);
+
+        }
+        return range;
+
+    }
+    public PhenominerExpectedRange get2StepRange(List<Record> records, String phenotypeAccId,int strainGroupId, String sex,String method, int ageLow, int ageHigh, String traitOntId, Set<String> rangeUnits, List<TraitObject> traitAncestors, boolean isNormal) throws Exception {
+        PhenominerExpectedRange  range= rangeValues.getRangeValues(records, isNormal);
+        String phenotype=getTerm(phenotypeAccId).getTerm();
+        String parentStrainName= strainGroupDao.getStrainGroupName(strainGroupId);
+        if(range!=null) {
+            range.setClinicalMeasurement(phenotype);
+            range.setClinicalMeasurementOntId(phenotypeAccId);
+            if (parentStrainName.toLowerCase().contains("normalstrain")) {
+                range.setExpectedRangeName(parentStrainName+ "_"+sex);
+            }
+            else {
+                String expectedRangeName=phenotype + "_"+sex+"_"+ageLow+"-"+ageHigh+" days";
+                if(method!=null){
+                    expectedRangeName+="_"+method;
+                }
+                range.setExpectedRangeName(expectedRangeName);
+            }
+            range.setStrainGroupName(parentStrainName);
+            range.setStrainGroupId(strainGroupId);
+            range.setExperimentRecords(records);
+            range.setSex(sex);
+            range.setAgeLowBound(ageLow);
+            range.setAgeHighBound(ageHigh);
+            range.setTraitOntId(traitOntId);
+            range.setUnits(rangeUnits.toString());
+            range.setTraitAncestors(traitAncestors);
+
+        }
+        return range;
+
+    }
+
+
+    public PhenominerExpectedRange getNormalRangeValues(List<PhenominerExpectedRange> records, String phenotypeAccId,int strainGroupId, String sex,String method, int ageLow, int ageHigh, String traitOntId, String rangeUnits,  boolean isNormal) throws Exception {
+        PhenominerExpectedRange  range= rangeValues.getNormalRangeValues(records, isNormal);
+        String phenotype=getTerm(phenotypeAccId).getTerm();
+        String parentStrainName= strainGroupDao.getStrainGroupName(strainGroupId);
+        if(range!=null) {
+            range.setClinicalMeasurement(phenotype);
+            range.setClinicalMeasurementOntId(phenotypeAccId);
+            if (parentStrainName.toLowerCase().contains("normalstrain")) {
+                range.setExpectedRangeName(parentStrainName+ "_"+sex);
+            }
+         /*   else {
+                String expectedRangeName=phenotype + "_"+sex+"_"+ageLow+"-"+ageHigh+" days";
+                if(method!=null){
+                    expectedRangeName+="_"+method;
+                }
+                range.setExpectedRangeName(expectedRangeName);
+            }*/
+            range.setStrainGroupName(parentStrainName);
+            range.setStrainGroupId(strainGroupId);
+       //     range.setExperimentRecords(records);
+            range.setSex(sex);
+            range.setAgeLowBound(ageLow);
+            range.setAgeHighBound(ageHigh);
+            range.setTraitOntId(traitOntId);
+            range.setUnits(rangeUnits);
+          //  range.setTraitAncestors(traitAncestors);
 
         }
         return range;
@@ -443,6 +445,7 @@ public class PhenotypeExpectedRangeDao extends OntologyXDAO {
             int strainGroupId= process.insertOrUpdateStrainGroup(normalStrainGroupMap, true);
             normalRanges.addAll(this.getNormalRanges(strainOntIds,mmoTerms, cmoAccId,xcoTerms, phenotypeTrait,strainGroupId));
 
+
         }
 
          return normalRanges;
@@ -460,11 +463,184 @@ public class PhenotypeExpectedRangeDao extends OntologyXDAO {
 
             normalStrainGroupMap.put(normalStrainGroupName, strainOntIds);
             int strainGroupId = process.insertOrUpdateStrainGroup(normalStrainGroupMap, true);
-            normalRanges.addAll(this.getNormalRanges(strainOntIds, mmoTerms, cmoAccId, xcoTerms, phenotypeTrait, strainGroupId));
+       //    normalRanges.addAll(this.getNormalRanges(strainOntIds, mmoTerms, cmoAccId, xcoTerms, phenotypeTrait, strainGroupId));
+                normalRanges.addAll(this.getNormalRanges(strainGroups, cmoAccId, strainGroupId));
+      //      normalRanges.addAll(this.getNormalRanges(strainGroups, cmoAccId, strainGroupId, xcoTerms, mmoTerms, phenotypeTrait));
+        }
+    //    System.out.println("NORMAL RANGES SIZE: "+ normalRanges.size());
+        return normalRanges;
+    }
+    public List<PhenominerExpectedRange> getNormalRanges(List<String> strainGroups, String phenotypeAccId, int strainGroupId, List<String> xcoTerms, List<String> mmoTerms, Map phenotypeTrait) throws Exception {
+        List<PhenominerExpectedRange> ranges= new ArrayList<>();
+        Map<String, List<PhenominerExpectedRange>> map= this.getRangesByStrainGroups(strainGroups, phenotypeAccId,xcoTerms, mmoTerms,phenotypeTrait);
+               for (Map.Entry e : map.entrySet()) {
+            String cat = (String) e.getKey();
+            List<PhenominerExpectedRange> recs = (List<PhenominerExpectedRange>) e.getValue();
+            if (recs.size() > 0) {
+                String traitOntId = recs.get(0).getTraitOntId();
+                String rangeUnits = recs.get(0).getUnits();
+                List<TraitObject> traitAncestors = recs.get(0).getTraitAncestors();
+                String sex = "Mixed";
+                int ageLow = 0;
+                int ageHigh = 999;
+                if (cat.equalsIgnoreCase("male") || cat.equalsIgnoreCase("female") || cat.equals("overall")) {
+                    if (cat.equalsIgnoreCase("female")) {
+                        sex = "Female";
+                    }
+                    if (cat.equalsIgnoreCase("male")) {
+                        sex = "Male";
+                    }
+                    //System.out.println("CATEGORY: "+cat +" -\t"+ recs.size()+"\t***********************");
+                    for(PhenominerExpectedRange r:recs){
+                        System.err.println(r.getStrainGroupName()+"\t"+ r.getRangeValue()+"\t"+r.getRangeLow()+"\t"+ r.getRangeHigh());
+                    }
+
+                 //     if(cat.equalsIgnoreCase("overall"))
+                    ranges.add(this.getNormalRangeValues(recs, phenotypeAccId, strainGroupId, sex, null, ageLow, ageHigh, traitOntId, rangeUnits,  true));
+                }
+
+            }
+        }
+
+        return ranges;
+    }
+   public List<PhenominerExpectedRange> getNormalRanges(List<String> strainGroups, String phenotypeAccId, int strainGroupId) throws Exception {
+        List<PhenominerExpectedRange> ranges= new ArrayList<>();
+        Map<String, List<PhenominerExpectedRange>> map= this.getRangesByStrainGroups(strainGroups, phenotypeAccId);
+             for (Map.Entry e : map.entrySet()) {
+                String cat = (String) e.getKey();
+                List<PhenominerExpectedRange> recs = (List<PhenominerExpectedRange>) e.getValue();
+                if (recs.size() > 0) {
+                    String traitOntId = recs.get(0).getTraitOntId();
+                    String rangeUnits = recs.get(0).getUnits();
+                //    List<TraitObject> traitAncestors = recs.get(0).getTraitAncestors();
+
+                    String sex = "Mixed";
+                    int ageLow = 0;
+                    int ageHigh = 999;
+                    if (cat.equalsIgnoreCase("male") || cat.equalsIgnoreCase("female") || cat.equals("overall")) {
+                      if (cat.equalsIgnoreCase("female")) {
+                            sex = "Female";
+                        }
+                        if (cat.equalsIgnoreCase("male")) {
+                            sex = "Male";
+                        }
+                    //  if(cat.equalsIgnoreCase("overall")) {
+                    //      System.out.print(xdao.getTerm(phenotypeAccId).getTerm()+"\t"+strainGroupDao.getStrainGroupName(strainGroupId)+'\t');
+                           ranges.add(this.getNormalRangeValues(recs, phenotypeAccId, strainGroupId, sex, null, ageLow, ageHigh, traitOntId, rangeUnits, true));
+                    //    System.out.print("\n");
+
+                    //   }
+                    }
+
+                }
+            }
+
+        return ranges;
+    }
+    public Map<String, List<PhenominerExpectedRange>> getRangesByStrainGroups(List<String> strainGroups, String phenotypeAccId) throws Exception {
+        PhenominerExpectedRangeDao rdao = new PhenominerExpectedRangeDao();
+        List<Integer> strainGroupdIds = new ArrayList<>();
+        for (String s : strainGroups) {
+            strainGroupdIds.add(strainGroupDao.getStrainGroupId(s));
+        }
+        List<PhenominerExpectedRange> overall = new ArrayList<>();
+        List<PhenominerExpectedRange> male = new ArrayList<>();
+        List<PhenominerExpectedRange> female = new ArrayList<>();
+        Map<String, List<PhenominerExpectedRange>> map = new HashMap<>();
+        if(strainGroupdIds.size()>1) {
+            for (int id : strainGroupdIds) {
+                List<PhenominerExpectedRange> ranges = rdao.getExpectedRanges(phenotypeAccId, id, 0, 999);
+
+                for (PhenominerExpectedRange r : ranges) {
+
+                    if (r.getSex().equalsIgnoreCase("male")) {
+                        male.add(r);
+                    }
+                    if (r.getSex().equalsIgnoreCase("female")) {
+                        female.add(r);
+                    }
+                    if (r.getSex().equalsIgnoreCase("mixed")) {
+                        if(!r.getExpectedRangeName().contains("tail") && !r.getExpectedRangeName().contains("vascular"))
+                        overall.add(r);
+                    }
+                }
+            }
+
+            map.put("overall", overall);
+            map.put("male", male);
+            map.put("female", female);
+        }
+        return map;
+    }
+
+    public Map<String, List<PhenominerExpectedRange>> getRangesByStrainGroups(List<String> strainGroups, String phenotypeAccId, List<String> xcoTerms, List<String> mmoTerms, Map phenotypeTrait) throws Exception {
+        PhenominerExpectedRangeDao rdao = new PhenominerExpectedRangeDao();
+        List<Integer> strainGroupdIds = new ArrayList<>();
+        for (String s : strainGroups) {
+            strainGroupdIds.add(strainGroupDao.getStrainGroupId(s));
+        }
+        List<PhenominerExpectedRange> overall = new ArrayList<>();
+        List<PhenominerExpectedRange> male = new ArrayList<>();
+        List<PhenominerExpectedRange> female = new ArrayList<>();
+        Map<String, List<PhenominerExpectedRange>> map = new HashMap<>();
+        if(strainGroupdIds.size()>1) {
+            for (int id : strainGroupdIds) {
+                List<PhenominerExpectedRange> ranges = rdao.getExpectedRanges(phenotypeAccId, id, 0, 999);
+                if (ranges.size() == 0) {
+                    ranges.addAll(this.getExcludedStrainGroupRanges(phenotypeAccId, id, xcoTerms, mmoTerms, phenotypeTrait));
+
+                }
+                for (PhenominerExpectedRange r : ranges) {
+                    if (r != null) {
+                        if (r.getSex().equalsIgnoreCase("male")) {
+                            male.add(r);
+                        }
+                        if (r.getSex().equalsIgnoreCase("female")) {
+                            female.add(r);
+                        }
+                        if (r.getSex().equalsIgnoreCase("mixed")) {
+                            if (!r.getExpectedRangeName().contains("tail") && !r.getExpectedRangeName().contains("vascular"))
+                                overall.add(r);
+                        }
+                    }
+                }
+            }
+            //System.err.println(xdao.getTerm(phenotypeAccId).getTerm() + "\tOVERALL: " + overall.size() + "\t" + "FEMALE:" + female.size() + "\tMALE: " + male.size());
+            map.put("overall", overall);
+            map.put("male", male);
+            map.put("female", female);
+        }
+        return map;
+    }
+    public List<PhenominerExpectedRange> getExcludedStrainGroupRanges(String phenotypeAccId, int id, List<String> xcoTerms, List<String> mmoTerms, Map phenotypeTrait) throws Exception {
+     return    getExcludedStrainRanges1(xcoTerms,  mmoTerms, phenotypeTrait, phenotypeAccId,  id);
+
+    }
+    public List<PhenominerExpectedRange> getExcludedStrainRanges1(List<String> xcoTerms, List<String> mmoTerms, Map phenotypeTrait, String cmoAccId, int id) throws Exception {
+        ExpectedRangeProcess process= new ExpectedRangeProcess();
+        List<PhenominerExpectedRange> normalRanges= new ArrayList<>();
+        if(NormalStrainGroup.phenotypeNormalStrainsMap.get(cmoAccId)!=null) {
+            String phenotype = getTerm(cmoAccId).getTerm();
+            String normalStrainGroupName = strainGroupDao.getStrainGroupName(id);
+            Map<String, List<String>> normalStrainGroupMap = new HashMap<>();
+            List<String> strainOntIds= new ArrayList<>();
+            List<String> ontIds=strainGroupDao.getStrainsOfStrainGroup(id);
+            for(String i:ontIds){
+                if(!strainOntIds.contains(i)){
+                    strainOntIds.add(i);
+                }
+            }
+
+            normalStrainGroupMap.put(normalStrainGroupName, strainOntIds);
+
+               normalRanges.addAll(this.getNormalRanges(strainOntIds, mmoTerms, cmoAccId, xcoTerms, phenotypeTrait, id));
+
         }
 
         return normalRanges;
     }
+
     public List<PhenominerExpectedRange> getNormalRanges(List<String> strainOntIds, List<String> mmoTerms, String cmoAccId, List<String> xcoTerms, PhenotypeTrait phenotypeTrait, int strainGroupId) throws Exception {
         List<String> cmoIds= new ArrayList<>(Arrays.asList(cmoAccId));
         List<PhenominerExpectedRange> ranges= new ArrayList<>();
@@ -472,7 +648,7 @@ public class PhenotypeExpectedRangeDao extends OntologyXDAO {
         try{
             records = pdao.getFullRecords(strainOntIds, mmoTerms, cmoIds, xcoTerms, 3);
         }catch (Exception exp){
-            System.out.println(cmoIds.get(0)+"\t"+ strainOntIds.size());
+            System.err.println(cmoIds.get(0)+"\t"+ strainOntIds.size());
             exp.printStackTrace();
         }
         String traitOntId= this.getTraitOntId(records, cmoAccId, phenotypeTrait.getPhenotypeTraitMap());
@@ -514,7 +690,7 @@ public class PhenotypeExpectedRangeDao extends OntologyXDAO {
 
                 List<Record> recs = (List<Record>) entry.getValue();
                 if(recs.size()>0)
-                    ranges.add(this.getRange(recs, cmoAccId, strainGroupId, sex, null, ageLow, ageHigh, traitOntId, rangeUnits, traitAncestors));
+                    ranges.add(this.getRange(recs, cmoAccId, strainGroupId, sex, null, ageLow, ageHigh, traitOntId, rangeUnits, traitAncestors, true));
             }
         }
      //   normalRanges.addAll(ranges);
@@ -528,7 +704,7 @@ public class PhenotypeExpectedRangeDao extends OntologyXDAO {
         try{
             records = pdao.getFullRecords(strainOntIds, mmoTerms, cmoIds, xcoTerms, 3);
         }catch (Exception exp){
-            System.out.println(cmoIds.get(0)+"\t"+ strainOntIds.size());
+            System.err.println(cmoIds.get(0)+"\t"+ strainOntIds.size());
             exp.printStackTrace();
         }
         String traitOntId= this.getTraitOntId(records, cmoAccId, phenotypeTrait);
@@ -542,14 +718,14 @@ public class PhenotypeExpectedRangeDao extends OntologyXDAO {
             String sex = "Mixed";
             int ageLow = 0;
             int ageHigh = 999;
-            //    if (cat.equals("overall")){
-            if (cat.equalsIgnoreCase("male") || cat.equalsIgnoreCase("female") || cat.equals("overall")){
-                if (cat.equalsIgnoreCase("female")) {
-                    sex = "Female";
-                }
-                if (cat.equalsIgnoreCase("male")) {
-                    sex = "Male";
-                }
+    //   if (cat.equalsIgnoreCase("overall")) {
+                  if (cat.equalsIgnoreCase("male") || cat.equalsIgnoreCase("female") || cat.equals("overall")) {
+                      if (cat.equalsIgnoreCase("female")) {
+                          sex = "Female";
+                      }
+                      if (cat.equalsIgnoreCase("male")) {
+                          sex = "Male";
+                      }
            /*     if (cat.equals("vascular")) {
                     method = "vascular";
                 }
@@ -568,11 +744,14 @@ public class PhenotypeExpectedRangeDao extends OntologyXDAO {
                     ageHigh = 999;
                 }*/
 
-                List<Record> recs = (List<Record>) entry.getValue();
-                if(recs.size()>0)
-                    ranges.add(this.getRange(recs, cmoAccId, strainGroupId, sex, null, ageLow, ageHigh, traitOntId, rangeUnits, traitAncestors));
+                      List<Record> recs = (List<Record>) entry.getValue();
+
+                      if (recs.size() > 0)
+                    //System.out.println(strainGroupDao.getStrainGroupName(strainGroupId)+"\t"+cat+"\t");
+                          ranges.add(this.getRange(recs, cmoAccId, strainGroupId, sex, null, ageLow, ageHigh, traitOntId, rangeUnits, traitAncestors, true));
+                  }
             }
-        }
+    //    }
         //   normalRanges.addAll(ranges);
         return ranges;
     }
@@ -580,9 +759,11 @@ public class PhenotypeExpectedRangeDao extends OntologyXDAO {
     public List<String> getNormalStrainGroupOntIds(List<String> strainGroups) throws Exception {
         List<String> strainOntIds=new ArrayList<>();
         for(String strainGroupName:strainGroups) {
+
             int id= strainGroupDao.getStrainGroupId(strainGroupName);
             List<String> ontIds=strainGroupDao.getStrainsOfStrainGroup(id);
             for(String i:ontIds){
+                //System.out.println(strainGroupName+"\t"+ i);
                 if(!strainOntIds.contains(i)){
                     strainOntIds.addAll(ontIds);
                 }
@@ -669,30 +850,33 @@ public class PhenotypeExpectedRangeDao extends OntologyXDAO {
 
     public int insert(List<PhenominerExpectedRange> ranges) throws Exception {
         int status=0;
-      List<PhenominerExpectedRange> triatMissedRanges= new ArrayList<>();
-        for(PhenominerExpectedRange range:ranges){
-            int expectedRangeId=getExpectedRangeId(range);
-            if(expectedRangeId==0) {
-                System.err.println(range.getStrainGroupName() +"\t"+range.getExpectedRangeName()+"\t" + range.getClinicalMeasurementOntId() );
-                expectedRangeId = dao.getNextKey("PHENOMINER_EXPECTED_RANGE_SEQ");
-            range.setExpectedRangeId(expectedRangeId);
-            status+=dao.insert(range);
-            }else{
 
-                 dao.updateExpectedRange(range, expectedRangeId);
-            }
-            for(Record r: range.getExperimentRecords()){
-               updateExpectedRangeExperiment(expectedRangeId,r.getId())  ;
-            }
-           if(range.getTraitAncestors().size()>0) {
-            for(TraitObject o:range.getTraitAncestors()){
-                    if(o.getTrait()!=null && o.getSubTrait()!=null)
-                insertOrUpdateRangeTraits(o, expectedRangeId);
-            }
-            }
+       for(PhenominerExpectedRange range:ranges) {
+            if (range != null) {
+                int expectedRangeId = getExpectedRangeId(range);
+                if (expectedRangeId == 0) {
+                    expectedRangeId = dao.getNextKey("PHENOMINER_EXPECTED_RANGE_SEQ");
+                    range.setExpectedRangeId(expectedRangeId);
+                    status += dao.insert(range);
+                } else {
 
+                    dao.updateExpectedRange(range, expectedRangeId);
+                }
+                if (range.getExperimentRecords() != null && range.getExperimentRecords().size() > 0) {
+                    for (Record r : range.getExperimentRecords()) {
+                        updateExpectedRangeExperiment(expectedRangeId, r.getId());
+                    }
+                }
+                if (range.getTraitAncestors() != null && range.getTraitAncestors().size() > 0) {
+                    for (TraitObject o : range.getTraitAncestors()) {
+                        if (o.getTrait() != null && o.getSubTrait() != null)
+                            insertOrUpdateRangeTraits(o, expectedRangeId);
+                    }
+                }
+              /*  if (range.getExpectedRangeName().toLowerCase().contains("normalstrain"))
+                    System.out.println(expectedRangeId + "\t" + range.getRangeValue() + "\t" + range.getRangeLow() + "\t" + range.getRangeHigh());*/
+          }
         }
-
 
         return status;
     }
@@ -734,11 +918,91 @@ public class PhenotypeExpectedRangeDao extends OntologyXDAO {
     public static void setTailTermIds(List<String> tailTermIds) {
         PhenotypeExpectedRangeDao.tailTermIds = tailTermIds;
     }
+    public void printResultsMatrix(List<String> phenotypes, List<PhenominerExpectedRange> ranges) throws Exception {
+        List<String> phenotypeNames=new ArrayList<>();
+        //  List<String> phenotypes1= new ArrayList<>(Arrays.asList("CMO:0000004"));
+        for(String cmo:phenotypes){
+            String term=getTerm(cmo).getTerm();
+            phenotypeNames.add(term+"_Mixed_0-999 days");
+            phenotypeNames.add(term+"_Mixed_0-79 days");
+            phenotypeNames.add(term+"_Mixed_80-99 days");
+            phenotypeNames.add(term+"_Mixed_100-999 days");
+            phenotypeNames.add(term+"_Male_0-999 days");
+            phenotypeNames.add(term+"_Female_0-999 days");
+            phenotypeNames.add(term+"_Mixed_0-999 days_vascular");
+            phenotypeNames.add(term+"_Mixed_0-999 days_tail");
+        }
+        List<String> strainGroupNames= strainGroupDao.getAllDistinctStrainGroupNames();
+        //    String[][] matrix= new String[ranges.size()+1][strainGroupNames.size()+1];
+        String[][] matrix= new String[phenotypeNames.size()+1][strainGroupNames.size()+1];
+        System.out.println("RANGES SIZE:"+ ranges.size());
+        System.out.println("STRAIN GROUPS SIZE: "+ strainGroupNames.size());
+
+
+
+        int i=0;
+        matrix[0][0]="phenotype" ;
+        int j=0;
+        for (String strain : strainGroupNames) {
+            matrix[0][j+1]=strain;
+            j++;
+        }
+        for(String name:phenotypeNames){
+            matrix[i+1][0]=name;
+            i++;
+        }
+
+        for(int n=0; n<strainGroupNames.size();n++){
+            int phenotypeCount=0;
+            String strain=matrix[0][n+1];
+            for(int m=0;m<phenotypeNames.size();m++){
+
+                String phenotypeName=matrix[m+1][0];
+
+                // System.out.println(matrix[0][n+1] +"\t"+ matrix[m+1][0]);
+                for(PhenominerExpectedRange range:ranges){
+                    if(range.getExpectedRangeName().equalsIgnoreCase(phenotypeName)&& strain.equalsIgnoreCase(range.getStrainGroupName())){
+                        matrix[m+1][n+1]=range.getRangeLow()+"|"+range.getRangeHigh() + " ("+ range.getExperimentRecords().size()+")";
+                        phenotypeCount++;
+                    }
+
+                }
+            }
+            matrix[0][n+1]=strain+"("+phenotypeCount+")";
+
+        }
+        try {
+            FileWriter fos= new FileWriter("C:/Apps/expectedRanges.tab");
+            PrintWriter dos= new PrintWriter(fos);
+            for (int k = 0; k <= phenotypeNames.size(); k++) {
+                int count=0;
+                for (int m = 0; m <= strainGroupNames.size(); m++) {
+
+                    if (matrix[k][m] == null) {
+                        dos.print("-" + "\t");
+                        // System.out.print("-" + "\t");
+                    } else {
+                        count++;
+                        dos.print(matrix[k][m] + "\t");
+                        // System.out.print(matrix[k][m] + "\t");
+                    }
+                }
+                dos.print(count-1);
+                dos.print("\n");
+                // System.out.print("\n");
+            }
+            dos.close();
+            fos.close();
+        }catch (Exception e){
+
+        }
+
+    }
 
     public static  void main(String[] args) throws Exception {
         PhenotypeExpectedRangeDao dao= new PhenotypeExpectedRangeDao();
         List<TraitObject> traitObjects=dao.getTraitAncester("VT:0005535");
-        System.out.println("TRAIT ANCESTORS SIZE: "+ traitObjects.size());
+        //System.out.println("TRAIT ANCESTORS SIZE: "+ traitObjects.size());
         for(TraitObject t: traitObjects){
             System.out.println(t.getTrait().getAccId()+"\t"+ t.getTrait().getTerm() +"\t" + t.getSubTrait().getAccId()+"\t"+ t.getSubTrait().getTerm());
         }
