@@ -12,6 +12,6 @@ cd $APPDIR
 
 java -Dspring.config=$APPDIR/../properties/default_db.xml \
      -Dlog4j.configurationFile=file://$APPDIR/properties/log4j2.xml \
-     -jar lib/$APNNAME.jar "$@" | tee run.log
+     -jar lib/$APPNAME.jar "$@" | tee run.log
 
 mailx -s "[$SERVER] Phenominer Expected Ranges Pipeline OK" $EMAIL_LIST < run.log

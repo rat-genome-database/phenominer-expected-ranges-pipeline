@@ -1,11 +1,10 @@
 package edu.mcw.rgd.phenominerExpectedRanges;
 
-import edu.mcw.rgd.dao.impl.PhenominerStrainGroupDao;
-
 import edu.mcw.rgd.phenominerExpectedRanges.dao.PhenotypeExpectedRangeDao;
 import edu.mcw.rgd.phenominerExpectedRanges.model.PhenotypeTrait;
 import edu.mcw.rgd.phenominerExpectedRanges.process.ExpectedRangeProcess;
 
+import edu.mcw.rgd.process.Utils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -24,7 +23,6 @@ public class Manager {
     private String version;
 
     PhenotypeExpectedRangeDao dao= new PhenotypeExpectedRangeDao();
-    //PhenominerStrainGroupDao strainGroupDao=new PhenominerStrainGroupDao();
     ExpectedRangeProcess process= new ExpectedRangeProcess();
 
     public static Logger log = LogManager.getLogger("main");
@@ -33,21 +31,20 @@ public class Manager {
         DefaultListableBeanFactory bf = new DefaultListableBeanFactory();
         new XmlBeanDefinitionReader(bf).loadBeanDefinitions(new FileSystemResource("properties/AppConfiguration.xml"));
         Manager manager = (Manager) (bf.getBean("manager"));
-        System.out.println(manager.getVersion());
         log.info(manager.getVersion());
-       try{
-              manager.run();
-       }catch (Exception e){
-           e.printStackTrace();
-           log.info(e.getMessage());
-       }
+
+        try {
+            manager.run();
+        }catch (Exception e){
+            Utils.printStackTrace(e, manager.log);
+        }
     }
 
     public void run() throws Exception {
 
         long startTime = System.currentTimeMillis();
 
-        System.out.println("START TIME: "+ startTime);
+        System.out.println("START TIME: "+ new Date(startTime));
 
         Map<String, List<String>> strainGroupMap= dao.getInbredStrainGroupMap2("RS:0000765");
         int status= process.insertOrUpdateStrainGroup(strainGroupMap, false); // inserts strain groups
@@ -62,10 +59,7 @@ public class Manager {
         // dao.printResultsMatrix(phenotypes, ranges);
 
         long endTime=System.currentTimeMillis();
-        System.out.println("END Time: " + endTime);
-        long totalTime=(endTime-startTime)/1000;
-        System.out.println("OVERALL TIME:"+ totalTime);
-
+        System.out.println("==== OK ====   time elapsed: "+ Utils.formatElapsedTime(startTime, endTime));
     }
 
     public void insertRanges(List<String> conditions, List<String> mmoTerms, PhenotypeTrait phenotypeTrait) throws Exception {
