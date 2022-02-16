@@ -7,10 +7,11 @@ EMAIL_LIST=jthota@mcw.edu
 if [ "$SERVER" = "REED" ]; then
   EMAIL_LIST=mtutaj@mcw.edu,jthota@mcw.edu,jdepons@mcw.edu
 fi
+
 cd $APPDIR
-pwd
-DB_OPTS="-Dspring.config=$APPDIR/../properties/default_db.xml"
-LOG4J_OPTS="-Dlog4j.configuration=file://$APPDIR/properties/log4j.properties"
-export PHENOMINER_EXPECTED_RANGES_OPTS="$DB_OPTS $LOG4J_OPTS"
-bin/$APPNAME "$@" | tee run.log
+
+java -Dspring.config=$APPDIR/../properties/default_db.xml \
+     -Dlog4j.configurationFile=file://$APPDIR/properties/log4j2.xml \
+     -jar lib/$APNNAME.jar "$@" | tee run.log
+
 mailx -s "[$SERVER] Phenominer Expected Ranges Pipeline OK" $EMAIL_LIST < run.log

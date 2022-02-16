@@ -2,7 +2,7 @@
 
 <beans>
     <bean id="manager" class="edu.mcw.rgd.phenominerExpectedRanges.Manager" >
-        <property name="version" value="Phenominer Expected Ranges v. 0.1.0 March 1, 2018" />
+        <property name="version" value="Phenominer Expected Ranges  -- build Feb 15, 2022" />
      </bean>
 
 </beans>
