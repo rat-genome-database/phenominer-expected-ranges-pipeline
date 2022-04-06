@@ -1,2 +1,5 @@
+Apr 06, 2022
+  cleaned up dependencies
+
 Feb 15, 2022
   upgraded log4j to avoid zero day exploit
