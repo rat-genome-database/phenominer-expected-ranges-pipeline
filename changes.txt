@@ -1,3 +1,6 @@
+Jul 24, 2023
+  updated dependencies to new major versions
+
 Apr 06, 2022
   cleaned up dependencies
 
