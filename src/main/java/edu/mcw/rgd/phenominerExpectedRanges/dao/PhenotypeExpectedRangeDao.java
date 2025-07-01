@@ -223,8 +223,8 @@ public class PhenotypeExpectedRangeDao extends OntologyXDAO {
         if (r.getMeasurementSD() != null && r.getMeasurementValue() != null && !Objects.equals(r.getMeasurementValue(), "") && !Objects.equals(r.getMeasurementSD(), "")) {
             if (Double.parseDouble(r.getMeasurementSD()) > 0.0){
                 overAllRecords.add(r);
-                int ageLow = 0;
-                int ageHigh = 0;
+                double ageLow = 0;
+                double ageHigh = 0;
             if (vascularTermIds.contains(r.getMeasurementMethod().getAccId())) vascularRecords.add(r);
             if (tailTermIds.contains(r.getMeasurementMethod().getAccId()))   tailRecords.add(r);
             if (r.getSample().getSex().equalsIgnoreCase("male")) {
