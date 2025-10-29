@@ -1,3 +1,6 @@
+Oct 29, 2025
+  updated dependencies; updated to dbcp2
+
 Jul 24, 2023
   updated dependencies to new major versions
 
