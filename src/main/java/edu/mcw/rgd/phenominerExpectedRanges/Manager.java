@@ -4,6 +4,7 @@ import edu.mcw.rgd.phenominerExpectedRanges.dao.PhenotypeExpectedRangeDao;
 import edu.mcw.rgd.phenominerExpectedRanges.model.PhenotypeTrait;
 import edu.mcw.rgd.phenominerExpectedRanges.process.ExpectedRangeProcess;
 
+import edu.mcw.rgd.process.MemoryMonitor;
 import edu.mcw.rgd.process.Utils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -46,20 +47,29 @@ public class Manager {
 
         System.out.println("START TIME: "+ new Date(startTime));
 
-        Map<String, List<String>> strainGroupMap= dao.getInbredStrainGroupMap2("RS:0000765");
-        int status= process.insertOrUpdateStrainGroup(strainGroupMap, false); // inserts strain groups
-        log.info("Total Strain Groups inserted: "+ status);
+        MemoryMonitor memoryMonitor = new MemoryMonitor();
+        memoryMonitor.start();
 
-        List<String> conditions= new ArrayList<>(Arrays.asList("XCO:0000099")); //control condition
-        List<String> mmoTerms=dao.getMeasurementMethods();
-        PhenotypeTrait phenotypeTrait= PhenotypeTrait.getInstance();
+        boolean ok = false;
+        try {
+            Map<String, List<String>> strainGroupMap= dao.getInbredStrainGroupMap2("RS:0000765");
+            int status= process.insertOrUpdateStrainGroup(strainGroupMap, false); // inserts strain groups
+            log.info("Total Strain Groups inserted: "+ status);
 
-        insertRanges(conditions, mmoTerms, phenotypeTrait);
+            List<String> conditions= new ArrayList<>(Arrays.asList("XCO:0000099")); //control condition
+            List<String> mmoTerms=dao.getMeasurementMethods();
+            PhenotypeTrait phenotypeTrait= PhenotypeTrait.getInstance();
 
-        // dao.printResultsMatrix(phenotypes, ranges);
+            insertRanges(conditions, mmoTerms, phenotypeTrait);
 
-        long endTime=System.currentTimeMillis();
-        System.out.println("==== OK ====   time elapsed: "+ Utils.formatElapsedTime(startTime, endTime));
+            // dao.printResultsMatrix(phenotypes, ranges);
+
+            ok = true;
+        } finally {
+            memoryMonitor.stop();
+            log.info(memoryMonitor.getSummary());
+            log.info((ok ? "==== OK ==== " : "==== FAILED ==== ") + "time elapsed: " + Utils.formatElapsedTime(startTime, System.currentTimeMillis()));
+        }
     }
 
     public void insertRanges(List<String> conditions, List<String> mmoTerms, PhenotypeTrait phenotypeTrait) throws Exception {

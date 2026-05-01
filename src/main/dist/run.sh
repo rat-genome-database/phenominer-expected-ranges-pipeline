@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 . /etc/profile
-APPNAME=PhenominerExpectedRanges
+APPNAME=phenominer-expected-ranges-pipeline
 APPDIR=/home/rgddata/pipelines/$APPNAME
 SERVER=`hostname -s | tr '[a-z]' '[A-Z]'`
 EMAIL_LIST=jthota@mcw.edu
