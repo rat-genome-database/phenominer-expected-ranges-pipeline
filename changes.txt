@@ -1,3 +1,6 @@
+May 19, 2026
+  renamed branch 'master' to 'main'
+
 May 01, 2026
   added MemoryMonitor; renamed myAppName to match project directory; updated dependencies
 
