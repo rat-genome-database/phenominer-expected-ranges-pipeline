@@ -1,3 +1,6 @@
+Jun 4, 2026
+  started centralizing db access: added DAO class, moved getTermAccByTerm into it; updated dependencies
+
 May 19, 2026
   renamed branch 'master' to 'main'
 

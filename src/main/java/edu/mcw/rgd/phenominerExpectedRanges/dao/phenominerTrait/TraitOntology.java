@@ -2,6 +2,7 @@ package edu.mcw.rgd.phenominerExpectedRanges.dao.phenominerTrait;
 
 import edu.mcw.rgd.dao.impl.OntologyXDAO;
 import edu.mcw.rgd.dao.impl.PhenominerDAO;
+import edu.mcw.rgd.phenominerExpectedRanges.DAO;
 import edu.mcw.rgd.datamodel.pheno.Experiment;
 import edu.mcw.rgd.datamodel.pheno.Record;
 
@@ -75,13 +76,13 @@ public class TraitOntology {
         return cmoVtMap;
     }
     public Map<String, String> getPhenotypeTraitMap(String phenotype, String trait, boolean termNames){
-        OntologyXDaoExt xdao= new OntologyXDaoExt();
+        DAO dao= new DAO();
         Map<String, String> cmoVtMap=new HashMap<>();
 
         if(termNames){
             try{
-                String cmoId=   xdao.getTermAccByTerm(phenotype.trim());
-                String traitId=xdao.getTermAccByTerm(trait.trim());
+                String cmoId=   dao.getTermAccByTerm(phenotype.trim());
+                String traitId=dao.getTermAccByTerm(trait.trim());
 
                 if(cmoId!=null && traitId!=null)
                  cmoVtMap.put(cmoId, traitId);
@@ -95,7 +96,7 @@ public class TraitOntology {
 
         }else{
             try{
-                String cmoId=   xdao.getTermAccByTerm(phenotype);
+                String cmoId=   dao.getTermAccByTerm(phenotype);
                 cmoVtMap.put(cmoId, trait);
                 // System.out.println(wordsArray[0]+"\t"+ cmoId+"\t"+ wordsArray[1]);
             }catch (Exception e){
