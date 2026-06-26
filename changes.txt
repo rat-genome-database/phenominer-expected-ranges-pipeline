@@ -1,3 +1,6 @@
+Jun 26, 2026
+  continued centralizing db access: moved updateExperiment into DAO class; updated dependencies
+
 Jun 4, 2026
   started centralizing db access: added DAO class, moved getTermAccByTerm into it; updated dependencies
 

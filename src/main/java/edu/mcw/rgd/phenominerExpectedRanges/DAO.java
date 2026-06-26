@@ -17,4 +17,9 @@ public class DAO {
         List<String> ontIds = StringListQuery.execute(xdao, sql, term);
         return ontIds.isEmpty() ? null : ontIds.get(0);
     }
+
+    public int updateExperiment(int expId, String expName, String traitOntId) throws Exception {
+        String sql = "UPDATE experiment SET experiment_name=?, trait_ont_id=? WHERE experiment_id=?";
+        return xdao.update(sql, expName, traitOntId, expId);
+    }
 }

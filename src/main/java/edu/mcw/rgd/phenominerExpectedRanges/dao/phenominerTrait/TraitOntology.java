@@ -3,13 +3,11 @@ package edu.mcw.rgd.phenominerExpectedRanges.dao.phenominerTrait;
 import edu.mcw.rgd.dao.impl.OntologyXDAO;
 import edu.mcw.rgd.dao.impl.PhenominerDAO;
 import edu.mcw.rgd.phenominerExpectedRanges.DAO;
-import edu.mcw.rgd.datamodel.pheno.Experiment;
 import edu.mcw.rgd.datamodel.pheno.Record;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.IOException;
 import java.util.*;
 
 /**
@@ -135,7 +133,7 @@ public class TraitOntology {
     }
     public int updateExperiments(Set<Integer> expIds, String traitOntId ) throws Exception {
         OntologyXDAO xdao=new OntologyXDAO();
-        OntologyXDaoExt dao= new OntologyXDaoExt();
+        DAO dao= new DAO();
         String traitTerm= null;
         int count=0;
         try {
