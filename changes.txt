@@ -1,3 +1,6 @@
+Oct 28, 2026
+  migrated to postgres; updated dependencies
+
 Jun 26, 2026
   continued centralizing db access: moved updateExperiment into DAO class; updated dependencies
 
